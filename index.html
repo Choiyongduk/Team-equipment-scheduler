@@ -500,6 +500,52 @@ html, body {
   font-size: 10px; color: var(--text3); font-style: italic;
   margin-top: 2px;
 }
+
+/* ── 타임라인 테이블 ── */
+.tl-table { border-collapse: collapse; font-size: 11px; min-width: 100%; }
+.tl-equip-cell {
+  position: sticky; left: 0; z-index: 3;
+  background: var(--bg2); border-right: 1px solid var(--border2);
+  padding: 5px 8px; white-space: nowrap; min-width: 120px; max-width: 140px;
+  border-bottom: 1px solid var(--border);
+  font-size: 11px; color: var(--text);
+}
+.tl-equip-cell .tl-group { font-size: 9px; color: var(--text3); }
+.tl-day-header {
+  text-align: center; padding: 4px 0; min-width: 28px;
+  font-size: 10px; font-weight: 700; color: var(--text3);
+  border-bottom: 1px solid var(--border2);
+  border-right: 0.5px solid var(--border);
+  background: var(--bg2);
+  position: sticky; top: 0; z-index: 2;
+}
+.tl-day-header.today-h { color: var(--accent); }
+.tl-day-header.sat-h { color: var(--blue); }
+.tl-day-header.sun-h { color: var(--red); }
+.tl-cell {
+  min-width: 28px; height: 30px;
+  border-right: 0.5px solid var(--border);
+  border-bottom: 0.5px solid var(--border);
+  position: relative; vertical-align: middle;
+}
+.tl-cell.booked { background: rgba(62,207,142,.22); }
+.tl-cell.booked-blue { background: rgba(91,141,238,.22); }
+.tl-cell.booked-amber { background: rgba(245,166,35,.22); }
+.tl-cell.booked-purple { background: rgba(167,139,250,.22); }
+.tl-cell.booked-coral { background: rgba(240,113,103,.22); }
+.tl-cell.today-col { background: rgba(62,207,142,.05); }
+.tl-cell.booked.today-col { background: rgba(62,207,142,.32); }
+.tl-label {
+  position: absolute; left: 3px; top: 50%; transform: translateY(-50%);
+  font-size: 9px; font-weight: 700; color: #0e1117;
+  white-space: nowrap; overflow: hidden;
+  text-overflow: ellipsis; max-width: 140px;
+  pointer-events: none;
+}
+.tl-fixed-badge {
+  font-size: 9px; color: var(--text3); font-style: italic;
+  padding: 0 3px;
+}
 </style>
 </head>
 <body>
@@ -513,7 +559,7 @@ html, body {
 
 <div class="app" id="main-app" style="display:none">
   <!-- 오프라인 배너 -->
-  <div class="offline-banner" id="offline-banner">⚠ 오프라인 — 데이터가 동기화되지 않을 수 있습니다</div>
+  <div class="offline-banner" id="offline-banner">&#x26A0; 오프라인 — 데이터가 동기화되지 않을 수 있습니다</div>
 
   <!-- 헤더 -->
   <div class="header">
@@ -533,19 +579,19 @@ html, body {
   <!-- 탭 -->
   <div class="nav">
     <button class="nav-btn active" data-tab="list" onclick="switchTab('list')">
-      <span class="nav-icon">🖥</span>장비현황
+      <span class="nav-icon">&#x1F5A5;</span>장비현황
     </button>
     <button class="nav-btn" data-tab="cal" onclick="switchTab('cal')">
-      <span class="nav-icon">📅</span>달력
+      <span class="nav-icon">&#x1F4C5;</span>달력
     </button>
     <button class="nav-btn" data-tab="book" onclick="switchTab('book')">
-      <span class="nav-icon">➕</span>예약하기
+      <span class="nav-icon">&#x2795;</span>예약하기
     </button>
     <button class="nav-btn" data-tab="mine" onclick="switchTab('mine')">
-      <span class="nav-icon">👤</span>내 예약
+      <span class="nav-icon">&#x1F464;</span>내 예약
     </button>
     <button class="nav-btn" data-tab="mgmt" onclick="switchTab('mgmt')">
-      <span class="nav-icon">⚙️</span>장비관리
+      <span class="nav-icon">&#x2699;</span>장비관리
     </button>
   </div>
 
@@ -588,6 +634,17 @@ html, body {
         <div class="cal-dh sat">토</div><div class="cal-dh sun">일</div>
       </div>
       <div class="cal-body" id="cal-body"></div>
+
+      <!-- ── 장비별 타임라인 테이블 ── -->
+      <div style="padding:14px 0 0">
+        <div style="padding:0 14px 8px;display:flex;align-items:center;justify-content:space-between">
+          <div style="font-size:10px;font-weight:700;color:var(--text3);letter-spacing:1px;text-transform:uppercase">장비별 예약 현황</div>
+          <div style="font-size:10px;color:var(--text3)">← 좌우로 스크롤</div>
+        </div>
+        <div style="overflow-x:auto;-webkit-overflow-scrolling:touch" id="timeline-scroll">
+          <div id="timeline-table"></div>
+        </div>
+      </div>
     </div>
 
     <!-- ══ 예약하기 ══ -->
@@ -842,7 +899,7 @@ window.addEventListener('offline', () => document.getElementById('offline-banner
 setTimeout(() => {
   if (document.getElementById('loading').style.display !== 'none') {
     document.getElementById('loading').querySelector('.loading-text').textContent
-      = '⚠ Firebase 설정을 확인해주세요 (index.html 상단)';
+      = '&#x26A0; Firebase 설정을 확인해주세요 (index.html 상단)';
   }
 }, 6000);
 
@@ -909,7 +966,7 @@ function effectiveStatus(equip) {
 function renderEquipList() {
   const wrap = document.getElementById('equip-list-wrap');
   if (!equipments.length) {
-    wrap.innerHTML = '<div class="empty-state"><div class="big">🖥</div>등록된 장비가 없습니다<br>장비관리 탭에서 추가해주세요</div>';
+    wrap.innerHTML = '<div class="empty-state"><div class="big">&#x1F5A5;</div>등록된 장비가 없습니다<br>장비관리 탭에서 추가해주세요</div>';
     return;
   }
 
@@ -1030,6 +1087,116 @@ function renderCal() {
   }).join('');
 }
 
+function renderTimeline() {
+  const wrap = document.getElementById('timeline-table');
+  if (!wrap) return;
+
+  const todayStr = today();
+  // 이번 달 날짜 배열 생성
+  const days = [];
+  const firstDay = new Date(calYear, calMonth, 1);
+  const lastDay  = new Date(calYear, calMonth+1, 0);
+  for (let d = 1; d <= lastDay.getDate(); d++) {
+    const dt = fmt(new Date(calYear, calMonth, d));
+    const dow = new Date(dt+'T00:00:00').getDay();
+    days.push({ date: dt, dow });
+  }
+
+  // 장비 필터 (달력 필터와 동일)
+  const selEquip = document.getElementById('cal-filter-equip')?.value || 'all';
+  const showEquips = selEquip === 'all'
+    ? equipments.filter(e => e.status !== 'broken')
+    : equipments.filter(e => e.id === selEquip && e.status !== 'broken');
+
+  // 시험실 그룹순 정렬
+  const groupOrder = ['내후환경시험실','내환경시험실','염수분무시험실'];
+  showEquips.sort((a,b) => {
+    const ga = groupOrder.indexOf(a.group||''), gb = groupOrder.indexOf(b.group||'');
+    return ga - gb;
+  });
+
+  // 색상 순환
+  const BOOK_CLASSES = ['booked','booked-blue','booked-amber','booked-purple','booked-coral'];
+  const colorIdx = {};
+  let colorCnt = 0;
+
+  // 헤더 행
+  let html = '<table class="tl-table"><thead><tr>';
+  html += '<th class="tl-equip-cell" style="font-size:10px;color:var(--text3);border-bottom:1px solid var(--border2)">장비명</th>';
+  days.forEach(d => {
+    const isSat = d.dow === 6, isSun = d.dow === 0, isToday = d.date === todayStr;
+    const cls = isToday ? 'today-h' : isSat ? 'sat-h' : isSun ? 'sun-h' : '';
+    const dd = new Date(d.date+'T00:00:00').getDate();
+    html += `<th class="tl-day-header ${cls}">${dd}</th>`;
+  });
+  html += '</tr></thead><tbody>';
+
+  // 장비별 행
+  let prevGroup = null;
+  showEquips.forEach(eq => {
+    // 시험실 그룹 구분선
+    if (eq.group && eq.group !== prevGroup) {
+      prevGroup = eq.group;
+      const colSpan = days.length + 1;
+      html += `<tr><td colspan="${colSpan}" style="padding:4px 8px;font-size:9px;font-weight:700;color:var(--text3);background:var(--bg3);letter-spacing:.5px;text-transform:uppercase;border-bottom:1px solid var(--border2)">${eq.group}</td></tr>`;
+    }
+
+    // 이 장비의 이번 달 예약 목록
+    const myBooks = bookings.filter(b => b.equipId === eq.id && b.end >= days[0].date && b.start <= days[days.length-1].date);
+
+    // 사용자별 색상 고정
+    myBooks.forEach(b => {
+      if (!colorIdx[b.user]) colorIdx[b.user] = BOOK_CLASSES[colorCnt++ % BOOK_CLASSES.length];
+    });
+
+    html += '<tr>';
+    // 장비명 셀
+    const effSt = effectiveStatus(eq);
+    const stDot = effSt === 'inuse' ? '#5b8dee' : effSt === 'fixed' ? '#f5a623' : effSt === 'broken' ? '#e05252' : '#3ecf8e';
+    html += `<td class="tl-equip-cell">
+      <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${stDot};margin-right:4px;vertical-align:middle;flex-shrink:0"></span>${eq.name}
+    </td>`;
+
+    // 날짜별 셀
+    days.forEach(d => {
+      const isToday = d.date === todayStr;
+      // 이 날짜에 걸치는 예약 찾기
+      const book = myBooks.find(b => b.start <= d.date && b.end >= d.date);
+      const isStart = book && book.start === d.date;
+
+      if (book) {
+        const cls = colorIdx[book.user] || 'booked';
+        const todayCls = isToday ? ' today-col' : '';
+        const label = isStart ? `<span class="tl-label">${book.user.split('_').slice(-1)[0]||book.user} ${book.spec||''}</span>` : '';
+        html += `<td class="tl-cell ${cls}${todayCls}">${label}</td>`;
+      } else if (eq.status === 'fixed') {
+        html += `<td class="tl-cell${isToday?' today-col':''}" style="background:rgba(245,166,35,.07)"><span class="tl-fixed-badge" style="${isToday?'':''}"></span></td>`;
+      } else {
+        html += `<td class="tl-cell${isToday?' today-col':''}"></td>`;
+      }
+    });
+
+    html += '</tr>';
+  });
+
+  html += '</tbody></table>';
+  wrap.innerHTML = html;
+
+  // 오늘 날짜 컬럼으로 자동 스크롤
+  const todayIdx = days.findIndex(d => d.date === todayStr);
+  if (todayIdx > 0) {
+    const scroll = document.getElementById('timeline-scroll');
+    if (scroll) {
+      const cellW = 28;
+      const frozenW = 140;
+      setTimeout(() => {
+        scroll.scrollLeft = Math.max(0, frozenW + todayIdx * cellW - scroll.clientWidth / 2);
+      }, 50);
+    }
+  }
+  renderTimeline();
+}
+
 function moveMon(dir) {
   if (dir === 0) { calYear = new Date().getFullYear(); calMonth = new Date().getMonth(); }
   else { calMonth += dir; if (calMonth < 0) { calMonth=11; calYear--; } else if (calMonth > 11) { calMonth=0; calYear++; } }
@@ -1076,7 +1243,7 @@ function renderMine() {
 
   const list = document.getElementById('my-list');
   if (!items.length) {
-    list.innerHTML = '<div class="empty-state"><div class="big">📭</div>예약 내역이 없습니다</div>';
+    list.innerHTML = '<div class="empty-state"><div class="big">&#x1F4ED;</div>예약 내역이 없습니다</div>';
     return;
   }
 
@@ -1152,15 +1319,28 @@ function checkConflict() {
   const start   = document.getElementById('f-start').value;
   const end     = document.getElementById('f-end').value;
   const warn    = document.getElementById('conflict-warning');
+  const btn     = document.getElementById('submit-btn');
   warn.style.display = 'none';
+  btn.disabled = false;
+  btn.textContent = '예약 등록';
 
   if (!equipId || !start || !end) return;
+
   const conflicts = bookings.filter(b =>
     b.equipId === equipId && b.start <= end && b.end >= start
   );
   if (conflicts.length) {
+    const names = [...new Set(conflicts.map(b => b.user))].join(', ');
+    const dates = conflicts.map(b => b.start + ' ~ ' + b.end).join(', ');
     warn.style.display = 'block';
-    warn.textContent = `⚠ ${conflicts.map(c=>c.user).join(', ')}의 예약과 기간이 겹칩니다`;
+    warn.innerHTML = '[X] ' + names + ' 예약과 기간이 겹칩니다<br><span style="font-size:11px;opacity:.8">' + dates + '</span>';
+    btn.disabled = true;
+    btn.textContent = '기간 중복 - 예약 불가';
+    btn.style.opacity = '0.5';
+  } else {
+    btn.disabled = false;
+    btn.textContent = '예약 등록';
+    btn.style.opacity = '1';
   }
 }
 
@@ -1177,6 +1357,20 @@ async function submitBooking() {
 
   if (!user || !equipId || !start || !end) { showToast('필수 항목을 모두 입력해주세요', 'error'); return; }
   if (end < start) { showToast('종료일이 시작일보다 이른 날짜입니다', 'error'); return; }
+
+  // ── 날짜 중복 체크 ──
+  const conflicts = bookings.filter(b =>
+    b.equipId === equipId &&
+    b.start <= end &&
+    b.end >= start
+  );
+  if (conflicts.length > 0) {
+    const eq = equipments.find(e => e.id === equipId);
+    const names = [...new Set(conflicts.map(b => b.user))].join(', ');
+    const dates = conflicts.map(b => `${b.start}~${b.end}`).join(', ');
+    showToast('[X] 예약 불가 - ' + names + ' 사용 중 (' + dates + ')', 'error');
+    return;
+  }
 
   const btn = document.getElementById('submit-btn');
   btn.disabled = true;

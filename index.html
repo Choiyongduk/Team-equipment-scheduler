@@ -866,6 +866,15 @@ function populateEquipSelects() {
   if (prev_ce) ce.value = prev_ce;
 }
 
+// ── 실효 상태 계산: 예약 기간이면 무조건 'inuse' ──
+function effectiveStatus(equip) {
+  if (equip.status === 'broken') return 'broken';
+  if (equip.status === 'fixed')  return 'fixed';
+  const todayStr = today();
+  const activeBook = bookings.find(b => b.equipId === equip.id && b.start <= todayStr && b.end >= todayStr);
+  return activeBook ? 'inuse' : 'available';
+}
+
 // ── 장비 목록 ──
 function renderEquipList() {
   const wrap = document.getElementById('equip-list-wrap');
@@ -874,12 +883,9 @@ function renderEquipList() {
     return;
   }
 
-  const groups = {
-    available: equipments.filter(e=>e.status==='available'),
-    inuse:     equipments.filter(e=>e.status==='inuse'),
-    fixed:     equipments.filter(e=>e.status==='fixed'),
-    broken:    equipments.filter(e=>e.status==='broken'),
-  };
+  // 실효 상태 기준으로 그룹화
+  const groups = { available:[], inuse:[], fixed:[], broken:[] };
+  equipments.forEach(e => { groups[effectiveStatus(e)].push(e); });
 
   let html = '';
   const renderGroup = (label, items, badgeCls) => {
@@ -887,22 +893,25 @@ function renderEquipList() {
     return `<div class="section-label">${label}</div>
     <div class="card" style="margin-bottom:14px">
     ${items.map(e => {
-      const myBooks = bookings.filter(b => b.equipId===e.id && b.end >= today());
-      const cur = myBooks.length
-        ? `<span style="color:var(--text)">${myBooks[0].user}</span> · ${myBooks[0].spec||'규격 미입력'}`
+      const todayStr = today();
+      const activeBook = bookings.find(b => b.equipId===e.id && b.start<=todayStr && b.end>=todayStr);
+      const upcomingBooks = bookings.filter(b => b.equipId===e.id && b.end>=todayStr);
+      const displayBook = activeBook || (upcomingBooks.length ? upcomingBooks[0] : null);
+      const cur = displayBook
+        ? `<span style="color:var(--text)">${displayBook.user}</span> · ${displayBook.spec||'규격 미입력'}`
         : '예약 없음';
-      const c = getColor(e.id);
+      const effStatus = effectiveStatus(e);
       return `<div class="equip-item" onclick="openEquipModal('${e.id}')">
-        <div class="equip-dot" style="background:${DOT_COLORS[e.status]||'#888'}"></div>
+        <div class="equip-dot" style="background:${DOT_COLORS[effStatus]||'#888'}"></div>
         <div class="equip-info">
           <div class="equip-name">${e.name}</div>
           <div class="equip-meta">${e.size||'—'} · ${e.mode||'—'}</div>
           <div class="equip-code">${e.code||'—'}</div>
           <div class="equip-cur">${cur}</div>
-          ${myBooks.length > 1 ? `<div style="font-size:10px;color:var(--text3);margin-top:3px">+ 예약 ${myBooks.length-1}건 더</div>` : ''}
+          ${upcomingBooks.length > 1 ? `<div style="font-size:10px;color:var(--text3);margin-top:3px">+ 예약 ${upcomingBooks.length-1}건 더</div>` : ''}
         </div>
         <div class="equip-actions">
-          <span class="badge ${badgeCls}">${STATUS_LABELS[e.status]}</span>
+          <span class="badge ${badgeCls}">${STATUS_LABELS[effStatus]}</span>
         </div>
       </div>`;
     }).join('')}
@@ -1223,11 +1232,12 @@ function openEquipModal(id) {
     .sort((a,b) => a.start.localeCompare(b.start));
 
   const c = getColor(id);
+  const effSt = effectiveStatus(eq);
   const bodyHtml = `
     <div class="modal-equip-name">${eq.name}</div>
     <div class="modal-equip-code">${eq.code||'—'} · ${eq.size||'—'}</div>
     <div style="margin-bottom:12px">
-      <span class="badge ${STATUS_BADGE[eq.status]||'badge-gray'}">${STATUS_LABELS[eq.status]||'—'}</span>
+      <span class="badge ${STATUS_BADGE[effSt]||'badge-gray'}">${STATUS_LABELS[effSt]||'—'}</span>
       ${eq.mode ? `<span style="font-size:11px;color:var(--text3);margin-left:8px">${eq.mode}</span>` : ''}
     </div>
     <div class="section-label">예정 예약 (${myBooks.length}건)</div>

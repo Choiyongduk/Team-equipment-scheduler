@@ -1,0 +1,1270 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>장비 스케줄러 — 내외장재팀</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<!-- Firebase SDK -->
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+  import {
+    getFirestore, collection, doc, addDoc, updateDoc, deleteDoc,
+    onSnapshot, query, orderBy, serverTimestamp, setDoc, getDoc
+  } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBA1A3_JNLEvrp1PhjAhg3-sWCvPtOaTpE",
+    authDomain: "team-equipment-scheduler.firebaseapp.com",
+    projectId: "team-equipment-scheduler",
+    storageBucket: "team-equipment-scheduler.firebasestorage.app",
+    messagingSenderId: "562135839911",
+    appId: "1:562135839911:web:337c16e1cff7d716fdd782"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  window._db = db;
+  window._fbFns = {
+    collection, doc, addDoc, updateDoc, deleteDoc,
+    onSnapshot, query, orderBy, serverTimestamp, setDoc, getDoc
+  };
+
+  // Firebase 연결 후 앱 초기화
+  window.dispatchEvent(new Event('firebase-ready'));
+</script>
+
+<style>
+:root {
+  --bg: #0e1117;
+  --bg2: #161b25;
+  --bg3: #1e2533;
+  --bg4: #252d3d;
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.13);
+  --text: #e8ecf4;
+  --text2: #8a95a8;
+  --text3: #4a5568;
+  --accent: #3ecf8e;
+  --accent2: #2bb87a;
+  --accent-dim: rgba(62,207,142,0.12);
+  --accent-dim2: rgba(62,207,142,0.06);
+  --blue: #5b8dee;
+  --blue-dim: rgba(91,141,238,0.15);
+  --amber: #f5a623;
+  --amber-dim: rgba(245,166,35,0.15);
+  --red: #e05252;
+  --red-dim: rgba(224,82,82,0.13);
+  --purple: #a78bfa;
+  --purple-dim: rgba(167,139,250,0.13);
+  --coral: #f07167;
+  --coral-dim: rgba(240,113,103,0.13);
+  --radius: 10px;
+  --radius-lg: 14px;
+  --font: 'Noto Sans KR', sans-serif;
+  --mono: 'JetBrains Mono', monospace;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+html, body {
+  height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 14px;
+  line-height: 1.5;
+  overscroll-behavior: none;
+}
+
+.app {
+  max-width: 430px;
+  margin: 0 auto;
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  position: relative;
+  overflow: hidden;
+}
+
+/* ── 헤더 ── */
+.header {
+  padding: 14px 16px 12px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 50;
+}
+.header-left { display: flex; align-items: center; gap: 10px; }
+.logo {
+  width: 34px; height: 34px;
+  background: var(--accent);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: 13px; color: #0e1117;
+}
+.header-title { font-size: 15px; font-weight: 700; color: var(--text); }
+.header-sub { font-size: 11px; color: var(--text2); }
+.header-badge {
+  display: flex; align-items: center; gap: 5px;
+  background: var(--accent-dim); border: 1px solid rgba(62,207,142,0.25);
+  border-radius: 20px; padding: 4px 10px; cursor: pointer;
+}
+.header-badge .dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--accent); animation: pulse 2s infinite;
+}
+.header-badge span { font-size: 12px; color: var(--accent); font-weight: 500; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+/* ── 탭 네비게이션 ── */
+.nav {
+  display: flex;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  padding: 0 4px;
+}
+.nav-btn {
+  flex: 1; padding: 10px 4px;
+  border: none; background: none; cursor: pointer;
+  color: var(--text3); font-size: 11px; font-family: var(--font);
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  transition: color .2s; position: relative;
+}
+.nav-btn .nav-icon { font-size: 18px; }
+.nav-btn.active { color: var(--accent); }
+.nav-btn.active::after {
+  content: ''; position: absolute; bottom: 0; left: 20%; right: 20%;
+  height: 2px; background: var(--accent); border-radius: 2px 2px 0 0;
+}
+
+/* ── 콘텐츠 ── */
+.content { flex: 1; overflow-y: auto; overflow-x: hidden; }
+.content::-webkit-scrollbar { width: 3px; }
+.content::-webkit-scrollbar-track { background: transparent; }
+.content::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+.section { display: none; animation: fadeIn .2s ease; }
+.section.active { display: block; }
+@keyframes fadeIn { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:translateY(0)} }
+
+/* ── 공통 컴포넌트 ── */
+.pad { padding: 14px 14px; }
+.section-label {
+  font-size: 10px; font-weight: 700; color: var(--text3);
+  text-transform: uppercase; letter-spacing: 1px;
+  margin-bottom: 10px;
+}
+.card {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); overflow: hidden;
+}
+.badge {
+  display: inline-flex; align-items: center;
+  font-size: 10px; font-weight: 700; padding: 2px 8px;
+  border-radius: 20px; letter-spacing: .3px;
+}
+.badge-green { background: rgba(62,207,142,0.15); color: #3ecf8e; }
+.badge-blue { background: var(--blue-dim); color: var(--blue); }
+.badge-amber { background: var(--amber-dim); color: var(--amber); }
+.badge-red { background: var(--red-dim); color: var(--red); }
+.badge-gray { background: rgba(255,255,255,0.07); color: var(--text2); }
+.badge-purple { background: var(--purple-dim); color: var(--purple); }
+
+/* ── 장비 목록 ── */
+.equip-item {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 14px 14px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer; transition: background .15s;
+  position: relative;
+}
+.equip-item:last-child { border-bottom: none; }
+.equip-item:hover { background: rgba(255,255,255,0.02); }
+.equip-item:active { background: rgba(255,255,255,0.04); }
+.equip-dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  flex-shrink: 0; margin-top: 3px;
+}
+.equip-info { flex: 1; min-width: 0; }
+.equip-name { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 2px; }
+.equip-meta { font-size: 11px; color: var(--text2); margin-bottom: 5px; }
+.equip-code { font-family: var(--mono); font-size: 10px; color: var(--text3); }
+.equip-cur {
+  font-size: 11px; color: var(--text2);
+  background: var(--bg3); border-radius: 5px;
+  padding: 4px 8px; margin-top: 5px;
+  border-left: 2px solid var(--border2);
+}
+.equip-actions {
+  display: flex; flex-direction: column; gap: 4px; align-items: flex-end;
+}
+.icon-btn {
+  background: none; border: none; cursor: pointer;
+  color: var(--text3); font-size: 14px; padding: 4px;
+  border-radius: 5px; transition: all .15s;
+}
+.icon-btn:hover { background: var(--bg3); color: var(--text2); }
+
+/* ── 월달력 ── */
+.cal-top {
+  padding: 12px 14px; display: flex;
+  align-items: center; justify-content: space-between;
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+  position: sticky; top: 0; z-index: 10;
+}
+.cal-month { font-size: 16px; font-weight: 700; color: var(--text); }
+.cal-year { font-size: 12px; color: var(--text2); margin-left: 6px; }
+.cal-nav-btns { display: flex; gap: 6px; align-items: center; }
+.cal-nav-btn {
+  width: 30px; height: 30px;
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 8px; cursor: pointer; color: var(--text2);
+  font-size: 14px; display: flex; align-items: center; justify-content: center;
+  transition: all .15s;
+}
+.cal-nav-btn:hover { background: var(--bg4); color: var(--text); }
+
+.cal-filter-row {
+  padding: 8px 14px;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+}
+.cal-filter-row select {
+  width: 100%; background: var(--bg3); border: 1px solid var(--border2);
+  border-radius: 8px; color: var(--text); font-family: var(--font);
+  font-size: 12px; padding: 6px 10px; outline: none;
+}
+
+.cal-days-header {
+  display: grid; grid-template-columns: repeat(7,1fr);
+  background: var(--bg2); border-bottom: 1px solid var(--border);
+}
+.cal-dh {
+  text-align: center; padding: 7px 0;
+  font-size: 10px; font-weight: 700; color: var(--text3);
+  text-transform: uppercase; letter-spacing: .5px;
+}
+.cal-dh.sat { color: var(--blue); }
+.cal-dh.sun { color: var(--red); }
+
+.cal-body { display: grid; grid-template-columns: repeat(7,1fr); }
+.cal-cell {
+  border-right: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: 4px 3px;
+  min-height: 84px;
+  cursor: pointer;
+  transition: background .12s;
+  position: relative;
+}
+.cal-cell:nth-child(7n) { border-right: none; }
+.cal-cell:hover { background: rgba(255,255,255,0.025); }
+.cal-cell.other-month { opacity: .35; }
+.cal-cell.today { background: var(--accent-dim2); }
+.cal-cell.today .cal-day-num { color: var(--accent); font-weight: 700; }
+.cal-cell.has-event::before {
+  content: ''; position: absolute; top: 3px; right: 3px;
+  width: 5px; height: 5px; border-radius: 50%; background: var(--accent);
+  opacity: .5;
+}
+.cal-day-num {
+  font-size: 11px; color: var(--text2); margin-bottom: 2px;
+  text-align: right; padding-right: 2px;
+}
+.cal-day-num.sat { color: var(--blue); }
+.cal-day-num.sun { color: var(--red); }
+.cal-event-pill {
+  font-size: 9px; padding: 1px 4px; border-radius: 3px;
+  margin-bottom: 1px; white-space: nowrap;
+  overflow: hidden; text-overflow: ellipsis;
+  max-width: 100%; display: block;
+  font-weight: 500;
+}
+
+/* ── 예약 폼 ── */
+.form-wrap { padding: 14px; }
+.form-group { margin-bottom: 14px; }
+.form-label {
+  font-size: 11px; font-weight: 700; color: var(--text2);
+  text-transform: uppercase; letter-spacing: .5px;
+  display: block; margin-bottom: 6px;
+}
+.form-control {
+  width: 100%; background: var(--bg2); border: 1px solid var(--border2);
+  border-radius: var(--radius); color: var(--text); font-family: var(--font);
+  font-size: 14px; padding: 10px 12px; outline: none;
+  transition: border-color .15s;
+}
+.form-control:focus { border-color: var(--accent); }
+.form-control::placeholder { color: var(--text3); }
+.date-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.submit-btn {
+  width: 100%; padding: 13px;
+  background: var(--accent); color: #0e1117;
+  border: none; border-radius: var(--radius);
+  font-size: 14px; font-weight: 700; font-family: var(--font);
+  cursor: pointer; transition: all .15s; margin-top: 4px;
+}
+.submit-btn:hover { background: var(--accent2); }
+.submit-btn:active { transform: scale(.98); }
+.submit-btn:disabled { opacity: .4; cursor: not-allowed; }
+
+/* ── 내 예약 ── */
+.my-item {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 12px 14px;
+  margin-bottom: 10px;
+}
+.my-item-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px; }
+.my-item-name { font-size: 13px; font-weight: 700; color: var(--text); }
+.my-item-equip { font-size: 11px; color: var(--text2); margin-bottom: 4px; }
+.my-item-date { font-size: 11px; color: var(--text3); font-family: var(--mono); }
+.my-item-spec {
+  display: inline-block; font-size: 10px; font-family: var(--mono);
+  background: var(--bg3); border-radius: 4px; padding: 2px 7px;
+  color: var(--text2); margin-top: 5px;
+}
+.del-btn {
+  background: var(--red-dim); border: 1px solid rgba(224,82,82,0.2);
+  border-radius: 7px; padding: 4px 10px; font-size: 11px;
+  color: var(--red); cursor: pointer; font-family: var(--font);
+  transition: all .15s; flex-shrink: 0;
+}
+.del-btn:hover { background: rgba(224,82,82,0.25); }
+
+/* ── 장비 관리 ── */
+.mgmt-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 13px 14px; border-bottom: 1px solid var(--border);
+  transition: background .15s;
+}
+.mgmt-item:last-child { border-bottom: none; }
+.mgmt-item-info { flex: 1; min-width: 0; }
+.mgmt-item-name { font-size: 13px; font-weight: 500; color: var(--text); }
+.mgmt-item-meta { font-size: 11px; color: var(--text3); font-family: var(--mono); }
+.mgmt-actions { display: flex; gap: 6px; }
+.mgmt-btn {
+  background: var(--bg3); border: 1px solid var(--border2);
+  border-radius: 7px; padding: 4px 9px; font-size: 11px;
+  color: var(--text2); cursor: pointer; font-family: var(--font);
+  transition: all .15s;
+}
+.mgmt-btn:hover { background: var(--bg4); color: var(--text); }
+.mgmt-btn.danger { color: var(--red); border-color: rgba(224,82,82,0.25); }
+.mgmt-btn.danger:hover { background: var(--red-dim); }
+.add-equip-form {
+  background: var(--bg2); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 14px; margin-bottom: 14px;
+}
+.add-equip-form .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.status-select {
+  display: flex; gap: 6px; flex-wrap: wrap; margin-top: 2px;
+}
+.status-radio { display: none; }
+.status-label {
+  padding: 5px 10px; border-radius: 20px; font-size: 11px; font-weight: 600;
+  cursor: pointer; border: 1px solid var(--border2); color: var(--text3);
+  transition: all .15s;
+}
+.status-radio:checked + .status-label { border-color: transparent; }
+#rs-available:checked + .status-label { background: rgba(62,207,142,0.15); color: var(--accent); border-color: rgba(62,207,142,0.3); }
+#rs-inuse:checked + .status-label { background: var(--blue-dim); color: var(--blue); border-color: rgba(91,141,238,0.3); }
+#rs-fixed:checked + .status-label { background: var(--amber-dim); color: var(--amber); border-color: rgba(245,166,35,0.3); }
+#rs-broken:checked + .status-label { background: var(--red-dim); color: var(--red); border-color: rgba(224,82,82,0.3); }
+
+/* ── 모달 ── */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,.7);
+  z-index: 200; display: flex; align-items: flex-end;
+  opacity: 0; pointer-events: none; transition: opacity .25s;
+}
+.modal-overlay.open { opacity: 1; pointer-events: all; }
+.modal {
+  width: 100%; max-width: 430px; margin: 0 auto;
+  background: var(--bg2); border-radius: 18px 18px 0 0;
+  padding: 0 0 30px;
+  transform: translateY(100%); transition: transform .3s cubic-bezier(.22,.68,0,1.2);
+}
+.modal-overlay.open .modal { transform: translateY(0); }
+.modal-handle {
+  width: 36px; height: 4px; background: var(--border2);
+  border-radius: 2px; margin: 12px auto 4px;
+}
+.modal-header {
+  padding: 8px 16px 12px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.modal-title { font-size: 15px; font-weight: 700; color: var(--text); }
+.modal-close {
+  background: var(--bg3); border: none; border-radius: 50%;
+  width: 28px; height: 28px; cursor: pointer; color: var(--text2);
+  font-size: 14px; display: flex; align-items: center; justify-content: center;
+}
+.modal-body { padding: 14px 16px; }
+.modal-equip-name { font-size: 15px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+.modal-equip-code { font-family: var(--mono); font-size: 11px; color: var(--text3); margin-bottom: 12px; }
+.modal-event-list { display: flex; flex-direction: column; gap: 7px; }
+.modal-event-card {
+  background: var(--bg3); border-radius: 8px; padding: 10px 12px;
+  border-left: 3px solid var(--accent);
+}
+.mec-user { font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+.mec-date { font-size: 11px; font-family: var(--mono); color: var(--text2); margin-bottom: 3px; }
+.mec-spec { font-size: 11px; color: var(--text3); }
+
+/* ── 토스트 ── */
+.toast {
+  position: fixed; bottom: 70px; left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--bg3); border: 1px solid var(--border2);
+  border-radius: 20px; padding: 9px 18px;
+  font-size: 13px; font-weight: 500; color: var(--text);
+  opacity: 0; transition: all .3s; z-index: 300;
+  white-space: nowrap; pointer-events: none;
+  box-shadow: 0 4px 20px rgba(0,0,0,.4);
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.toast.success { background: var(--accent-dim); border-color: rgba(62,207,142,.3); color: var(--accent); }
+.toast.error { background: var(--red-dim); border-color: rgba(224,82,82,.3); color: var(--red); }
+
+/* ── 로딩 ── */
+.loading-screen {
+  position: fixed; inset: 0; background: var(--bg);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  z-index: 500; gap: 14px; transition: opacity .4s;
+}
+.loading-screen.gone { opacity: 0; pointer-events: none; }
+.loading-logo {
+  width: 60px; height: 60px; background: var(--accent);
+  border-radius: 16px; display: flex; align-items: center; justify-content: center;
+  font-size: 26px; font-weight: 700; color: #0e1117;
+}
+.loading-text { font-size: 14px; color: var(--text2); }
+.spinner {
+  width: 20px; height: 20px; border: 2px solid var(--border2);
+  border-top-color: var(--accent); border-radius: 50%;
+  animation: spin .7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── 빈 상태 ── */
+.empty-state {
+  text-align: center; padding: 40px 20px;
+  color: var(--text3); font-size: 13px; line-height: 1.8;
+}
+.empty-state .big { font-size: 32px; margin-bottom: 8px; }
+
+/* ── 오프라인 배너 ── */
+.offline-banner {
+  background: var(--amber-dim); border-bottom: 1px solid rgba(245,166,35,.3);
+  padding: 7px 14px; font-size: 11px; color: var(--amber);
+  text-align: center; display: none; font-weight: 500;
+}
+.offline-banner.show { display: block; }
+
+/* ── 날짜 섹션 구분 ── */
+.date-divider {
+  padding: 8px 14px 4px;
+  font-size: 10px; font-weight: 700; color: var(--text3);
+  text-transform: uppercase; letter-spacing: .8px;
+  background: var(--bg);
+  position: sticky; top: 0; z-index: 5;
+}
+.conflict-warning {
+  background: var(--amber-dim); border: 1px solid rgba(245,166,35,.3);
+  border-radius: var(--radius); padding: 8px 12px; margin-bottom: 12px;
+  font-size: 12px; color: var(--amber);
+}
+
+/* 전용 장비 태그 */
+.dedicated-tag {
+  font-size: 10px; color: var(--text3); font-style: italic;
+  margin-top: 2px;
+}
+</style>
+</head>
+<body>
+
+<!-- 로딩 화면 -->
+<div class="loading-screen" id="loading">
+  <div class="loading-logo">장</div>
+  <div class="spinner"></div>
+  <div class="loading-text">Firebase 연결 중...</div>
+</div>
+
+<div class="app" id="main-app" style="display:none">
+  <!-- 오프라인 배너 -->
+  <div class="offline-banner" id="offline-banner">⚠ 오프라인 — 데이터가 동기화되지 않을 수 있습니다</div>
+
+  <!-- 헤더 -->
+  <div class="header">
+    <div class="header-left">
+      <div class="logo">장</div>
+      <div>
+        <div class="header-title">장비 스케줄러</div>
+        <div class="header-sub">내외장재팀</div>
+      </div>
+    </div>
+    <div class="header-badge" onclick="switchTab('mine')">
+      <div class="dot"></div>
+      <span id="badge-count">실시간 동기화</span>
+    </div>
+  </div>
+
+  <!-- 탭 -->
+  <div class="nav">
+    <button class="nav-btn active" data-tab="list" onclick="switchTab('list')">
+      <span class="nav-icon">🖥</span>장비현황
+    </button>
+    <button class="nav-btn" data-tab="cal" onclick="switchTab('cal')">
+      <span class="nav-icon">📅</span>달력
+    </button>
+    <button class="nav-btn" data-tab="book" onclick="switchTab('book')">
+      <span class="nav-icon">➕</span>예약하기
+    </button>
+    <button class="nav-btn" data-tab="mine" onclick="switchTab('mine')">
+      <span class="nav-icon">👤</span>내 예약
+    </button>
+    <button class="nav-btn" data-tab="mgmt" onclick="switchTab('mgmt')">
+      <span class="nav-icon">⚙️</span>장비관리
+    </button>
+  </div>
+
+  <div class="content">
+    <!-- ══ 장비현황 ══ -->
+    <div id="sec-list" class="section active pad">
+      <div id="equip-list-wrap"></div>
+    </div>
+
+    <!-- ══ 달력 ══ -->
+    <div id="sec-cal" class="section">
+      <div class="cal-top">
+        <div>
+          <span class="cal-month" id="cal-month-label">4월</span>
+          <span class="cal-year" id="cal-year-label">2026</span>
+        </div>
+        <div class="cal-nav-btns">
+          <button class="cal-nav-btn" onclick="moveMon(-1)">◀</button>
+          <button class="cal-nav-btn" onclick="moveMon(0)">오늘</button>
+          <button class="cal-nav-btn" onclick="moveMon(1)">▶</button>
+        </div>
+      </div>
+      <div class="cal-filter-row">
+        <select id="cal-filter-equip" onchange="renderCal()">
+          <option value="all">전체 장비 보기</option>
+        </select>
+      </div>
+      <div class="cal-days-header">
+        <div class="cal-dh">월</div><div class="cal-dh">화</div>
+        <div class="cal-dh">수</div><div class="cal-dh">목</div>
+        <div class="cal-dh">금</div>
+        <div class="cal-dh sat">토</div><div class="cal-dh sun">일</div>
+      </div>
+      <div class="cal-body" id="cal-body"></div>
+    </div>
+
+    <!-- ══ 예약하기 ══ -->
+    <div id="sec-book" class="section">
+      <div class="form-wrap">
+        <div id="conflict-warning" class="conflict-warning" style="display:none"></div>
+        <div class="form-group">
+          <label class="form-label">팀원 이름</label>
+          <select class="form-control" id="f-user" onchange="onUserChange()">
+            <option value="">선택하세요</option>
+          </select>
+        </div>
+        <div class="form-group" id="custom-user-group" style="display:none">
+          <label class="form-label">직접 입력</label>
+          <input type="text" class="form-control" id="f-custom-user" placeholder="팀_이름 형식으로 입력">
+        </div>
+        <div class="form-group">
+          <label class="form-label">장비 선택</label>
+          <select class="form-control" id="f-equip" onchange="checkConflict()">
+            <option value="">선택하세요</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">시험 규격 / 모델번호</label>
+          <input type="text" class="form-control" id="f-spec" placeholder="예: MS210-06A1">
+        </div>
+        <div class="form-group">
+          <label class="form-label">사용 기간</label>
+          <div class="date-row">
+            <div>
+              <label class="form-label" style="font-size:10px">시작일</label>
+              <input type="date" class="form-control" id="f-start" onchange="checkConflict()">
+            </div>
+            <div>
+              <label class="form-label" style="font-size:10px">종료일</label>
+              <input type="date" class="form-control" id="f-end" onchange="checkConflict()">
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">메모 (선택)</label>
+          <input type="text" class="form-control" id="f-memo" placeholder="특이사항 입력">
+        </div>
+        <button class="submit-btn" id="submit-btn" onclick="submitBooking()">예약 등록</button>
+      </div>
+    </div>
+
+    <!-- ══ 내 예약 ══ -->
+    <div id="sec-mine" class="section pad">
+      <div class="form-group">
+        <label class="form-label">팀원 필터</label>
+        <select class="form-control" id="mine-filter" onchange="renderMine()" style="margin-top:4px">
+          <option value="">전체 보기</option>
+        </select>
+      </div>
+      <div id="my-list"></div>
+    </div>
+
+    <!-- ══ 장비 관리 ══ -->
+    <div id="sec-mgmt" class="section pad">
+      <div class="add-equip-form" id="add-equip-form">
+        <div class="section-label" style="margin-bottom:12px">새 장비 추가</div>
+        <div class="form-group">
+          <label class="form-label">장비명</label>
+          <input type="text" class="form-control" id="m-name" placeholder="예: 온습도시험기 5 (메이커명)">
+        </div>
+        <div class="form-group">
+          <div class="form-row">
+            <div>
+              <label class="form-label">자산 코드</label>
+              <input type="text" class="form-control" id="m-code" placeholder="XXXX-000000">
+            </div>
+            <div>
+              <label class="form-label">내부 크기 (mm)</label>
+              <input type="text" class="form-control" id="m-size" placeholder="W*D*H">
+            </div>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">예약 방식</label>
+          <input type="text" class="form-control" id="m-mode" placeholder="예: 일정, 고정조건 xx℃, 전용 장비">
+        </div>
+        <div class="form-group">
+          <label class="form-label">초기 상태</label>
+          <div class="status-select">
+            <input type="radio" name="m-status" id="rs-available" value="available" class="status-radio" checked>
+            <label for="rs-available" class="status-label">사용 가능</label>
+            <input type="radio" name="m-status" id="rs-inuse" value="inuse" class="status-radio">
+            <label for="rs-inuse" class="status-label">사용 중</label>
+            <input type="radio" name="m-status" id="rs-fixed" value="fixed" class="status-radio">
+            <label for="rs-fixed" class="status-label">전용 장비</label>
+            <input type="radio" name="m-status" id="rs-broken" value="broken" class="status-radio">
+            <label for="rs-broken" class="status-label">고장/폐기</label>
+          </div>
+        </div>
+        <button class="submit-btn" onclick="addEquipment()">장비 추가</button>
+      </div>
+
+      <div class="section-label">등록 장비 목록</div>
+      <div class="card" id="mgmt-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- 장비 상세 모달 -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div class="modal-title">장비 상세</div>
+      <button class="modal-close" onclick="closeModalDirect()">✕</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════
+//  전역 상태
+// ═══════════════════════════════════════════════
+let db, fbFns;
+let equipments = [];
+let bookings = [];
+let members = [
+  '의장_곽현준','의장_김동현','의장_박건우','의장_김대성',
+  '의장_이명호','의장_이보윤','의장_서지혁','의장_김효빈',
+  '의장_이진원','환경_조아라','환경_김영서','환경_김현아',
+  '최원혁','직접입력'
+];
+let calYear = new Date().getFullYear();
+let calMonth = new Date().getMonth(); // 0-based
+let activeTab = 'list';
+
+const COLORS = ['accent','blue','amber','purple','coral','red'];
+const COLOR_MAP = {};
+
+// ═══════════════════════════════════════════════
+//  유틸리티
+// ═══════════════════════════════════════════════
+const fmt = d => d instanceof Date ? d.toISOString().split('T')[0] : d;
+const today = () => fmt(new Date());
+
+function fmtKr(s) {
+  if (!s) return '';
+  const d = new Date(s + 'T00:00:00');
+  return `${d.getMonth()+1}/${d.getDate()}`;
+}
+
+function getColor(equipId) {
+  if (!COLOR_MAP[equipId]) {
+    const idx = Object.keys(COLOR_MAP).length % COLORS.length;
+    COLOR_MAP[equipId] = COLORS[idx];
+  }
+  return COLOR_MAP[equipId];
+}
+
+const COLOR_STYLES = {
+  accent: 'background:rgba(62,207,142,.18);color:#3ecf8e',
+  blue:   'background:rgba(91,141,238,.18);color:#5b8dee',
+  amber:  'background:rgba(245,166,35,.18);color:#f5a623',
+  purple: 'background:rgba(167,139,250,.18);color:#a78bfa',
+  coral:  'background:rgba(240,113,103,.18);color:#f07167',
+  red:    'background:rgba(224,82,82,.18);color:#e05252',
+};
+
+const DOT_COLORS = {
+  available: '#3ecf8e', inuse: '#5b8dee',
+  fixed: '#f5a623', broken: '#e05252'
+};
+
+const STATUS_LABELS = {
+  available:'사용 가능', inuse:'사용 중', fixed:'전용 장비', broken:'고장/폐기'
+};
+const STATUS_BADGE = {
+  available:'badge-green', inuse:'badge-blue',
+  fixed:'badge-amber', broken:'badge-red'
+};
+
+function showToast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast' + (type ? ' '+type : '');
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ═══════════════════════════════════════════════
+//  Firebase 초기화
+// ═══════════════════════════════════════════════
+window.addEventListener('firebase-ready', async () => {
+  db = window._db;
+  fbFns = window._fbFns;
+
+  const loading = document.getElementById('loading');
+  const mainApp = document.getElementById('main-app');
+
+  // 장비 실시간 동기화
+  fbFns.onSnapshot(
+    fbFns.query(fbFns.collection(db, 'equipments'), fbFns.orderBy('createdAt')),
+    snap => {
+      equipments = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      renderAll();
+    }
+  );
+
+  // 예약 실시간 동기화
+  fbFns.onSnapshot(
+    fbFns.query(fbFns.collection(db, 'bookings'), fbFns.orderBy('createdAt')),
+    snap => {
+      bookings = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+      renderAll();
+      updateBadge();
+    }
+  );
+
+  // 멤버 목록 동기화
+  const memberDoc = await fbFns.getDoc(fbFns.doc(db, 'config', 'members'));
+  if (memberDoc.exists()) {
+    members = [...memberDoc.data().list, '직접입력'];
+  } else {
+    // 초기 멤버 저장
+    await fbFns.setDoc(fbFns.doc(db, 'config', 'members'), { list: members.filter(m=>m!=='직접입력') });
+  }
+
+  populateSelects();
+
+  loading.classList.add('gone');
+  setTimeout(() => { loading.style.display='none'; mainApp.style.display='flex'; }, 400);
+});
+
+// 오프라인 감지
+window.addEventListener('online',  () => document.getElementById('offline-banner').classList.remove('show'));
+window.addEventListener('offline', () => document.getElementById('offline-banner').classList.add('show'));
+
+// Firebase 로드 실패 대비 (잘못된 config일 경우)
+setTimeout(() => {
+  if (document.getElementById('loading').style.display !== 'none') {
+    document.getElementById('loading').querySelector('.loading-text').textContent
+      = '⚠ Firebase 설정을 확인해주세요 (index.html 상단)';
+  }
+}, 6000);
+
+// ═══════════════════════════════════════════════
+//  렌더링
+// ═══════════════════════════════════════════════
+function renderAll() {
+  if (activeTab === 'list') renderEquipList();
+  if (activeTab === 'cal')  renderCal();
+  if (activeTab === 'mine') renderMine();
+  if (activeTab === 'mgmt') renderMgmt();
+}
+
+function populateSelects() {
+  // 예약 폼 유저
+  const fu = document.getElementById('f-user');
+  fu.innerHTML = '<option value="">선택하세요</option>';
+  members.forEach(m => {
+    const o = document.createElement('option');
+    o.value = m; o.textContent = m; fu.appendChild(o);
+  });
+
+  // 내 예약 필터
+  const mf = document.getElementById('mine-filter');
+  mf.innerHTML = '<option value="">전체 보기</option>';
+  members.filter(m=>m!=='직접입력').forEach(m => {
+    const o = document.createElement('option');
+    o.value = m; o.textContent = m; mf.appendChild(o);
+  });
+
+  populateEquipSelects();
+}
+
+function populateEquipSelects() {
+  const fe = document.getElementById('f-equip');
+  const ce = document.getElementById('cal-filter-equip');
+  const prev_fe = fe.value, prev_ce = ce.value;
+
+  fe.innerHTML = '<option value="">선택하세요</option>';
+  ce.innerHTML = '<option value="all">전체 장비 보기</option>';
+
+  const active = equipments.filter(e => e.status !== 'broken');
+  active.forEach(e => {
+    [fe, ce].forEach(sel => {
+      const o = document.createElement('option');
+      o.value = e.id; o.textContent = e.name; sel.appendChild(o);
+    });
+  });
+
+  if (prev_fe) fe.value = prev_fe;
+  if (prev_ce) ce.value = prev_ce;
+}
+
+// ── 장비 목록 ──
+function renderEquipList() {
+  const wrap = document.getElementById('equip-list-wrap');
+  if (!equipments.length) {
+    wrap.innerHTML = '<div class="empty-state"><div class="big">🖥</div>등록된 장비가 없습니다<br>장비관리 탭에서 추가해주세요</div>';
+    return;
+  }
+
+  const groups = {
+    available: equipments.filter(e=>e.status==='available'),
+    inuse:     equipments.filter(e=>e.status==='inuse'),
+    fixed:     equipments.filter(e=>e.status==='fixed'),
+    broken:    equipments.filter(e=>e.status==='broken'),
+  };
+
+  let html = '';
+  const renderGroup = (label, items, badgeCls) => {
+    if (!items.length) return '';
+    return `<div class="section-label">${label}</div>
+    <div class="card" style="margin-bottom:14px">
+    ${items.map(e => {
+      const myBooks = bookings.filter(b => b.equipId===e.id && b.end >= today());
+      const cur = myBooks.length
+        ? `<span style="color:var(--text)">${myBooks[0].user}</span> · ${myBooks[0].spec||'규격 미입력'}`
+        : '예약 없음';
+      const c = getColor(e.id);
+      return `<div class="equip-item" onclick="openEquipModal('${e.id}')">
+        <div class="equip-dot" style="background:${DOT_COLORS[e.status]||'#888'}"></div>
+        <div class="equip-info">
+          <div class="equip-name">${e.name}</div>
+          <div class="equip-meta">${e.size||'—'} · ${e.mode||'—'}</div>
+          <div class="equip-code">${e.code||'—'}</div>
+          <div class="equip-cur">${cur}</div>
+          ${myBooks.length > 1 ? `<div style="font-size:10px;color:var(--text3);margin-top:3px">+ 예약 ${myBooks.length-1}건 더</div>` : ''}
+        </div>
+        <div class="equip-actions">
+          <span class="badge ${badgeCls}">${STATUS_LABELS[e.status]}</span>
+        </div>
+      </div>`;
+    }).join('')}
+    </div>`;
+  };
+
+  html += renderGroup('사용 가능', groups.available, 'badge-green');
+  html += renderGroup('사용 중', groups.inuse, 'badge-blue');
+  html += renderGroup('전용 장비', groups.fixed, 'badge-amber');
+  html += renderGroup('고장 / 폐기', groups.broken, 'badge-red');
+
+  wrap.innerHTML = html;
+}
+
+// ── 월달력 ──
+function renderCal() {
+  const MONTH_KR = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+  document.getElementById('cal-month-label').textContent = MONTH_KR[calMonth];
+  document.getElementById('cal-year-label').textContent = calYear;
+
+  const selEquip = document.getElementById('cal-filter-equip')?.value || 'all';
+  const todayStr = today();
+
+  const firstDay = new Date(calYear, calMonth, 1);
+  const lastDay  = new Date(calYear, calMonth+1, 0);
+
+  // 월요일 시작 (0=일,1=월,...,6=토 → offset)
+  let startDow = firstDay.getDay(); // 0=일
+  startDow = startDow === 0 ? 6 : startDow - 1; // 0=월 기준
+
+  const cells = [];
+  // 이전 달 빈 칸
+  for (let i = 0; i < startDow; i++) {
+    const d = new Date(calYear, calMonth, 1 - (startDow - i));
+    cells.push({ date: fmt(d), other: true });
+  }
+  // 이번 달
+  for (let d = 1; d <= lastDay.getDate(); d++) {
+    cells.push({ date: fmt(new Date(calYear, calMonth, d)), other: false });
+  }
+  // 다음 달 빈 칸
+  const remaining = (7 - (cells.length % 7)) % 7;
+  for (let i = 1; i <= remaining; i++) {
+    const d = new Date(calYear, calMonth+1, i);
+    cells.push({ date: fmt(d), other: true });
+  }
+
+  const body = document.getElementById('cal-body');
+  body.innerHTML = cells.map(cell => {
+    const dow = new Date(cell.date + 'T00:00:00').getDay(); // 0=일,6=토
+    const isSat = dow === 6, isSun = dow === 0;
+    const isToday = cell.date === todayStr;
+    const isPast  = cell.date < todayStr;
+
+    const dayBooks = bookings.filter(b => {
+      if (selEquip !== 'all' && b.equipId !== selEquip) return false;
+      return b.start <= cell.date && b.end >= cell.date;
+    });
+
+    const pills = dayBooks.slice(0, 3).map(b => {
+      const eq = equipments.find(e => e.id === b.equipId);
+      const c = eq ? getColor(eq.id) : 'accent';
+      const label = selEquip === 'all'
+        ? (eq ? eq.name.replace(/\(.*\)/,'').trim() : b.user)
+        : (b.user.split('_')[1] || b.user);
+      return `<span class="cal-event-pill" style="${COLOR_STYLES[c]}" title="${b.user} ${b.spec||''}">${label}</span>`;
+    }).join('');
+
+    const more = dayBooks.length > 3
+      ? `<span style="font-size:9px;color:var(--text3)">+${dayBooks.length-3}</span>` : '';
+
+    const dayNumCls = isSat ? ' sat' : isSun ? ' sun' : '';
+    const cellCls = [
+      'cal-cell',
+      cell.other ? 'other-month' : '',
+      isToday ? 'today' : '',
+      dayBooks.length ? 'has-event' : '',
+    ].filter(Boolean).join(' ');
+
+    const d = new Date(cell.date + 'T00:00:00').getDate();
+    return `<div class="${cellCls}" onclick="onCellClick('${cell.date}')">
+      <div class="cal-day-num${dayNumCls}">${d}</div>
+      ${pills}${more}
+    </div>`;
+  }).join('');
+}
+
+function moveMon(dir) {
+  if (dir === 0) { calYear = new Date().getFullYear(); calMonth = new Date().getMonth(); }
+  else { calMonth += dir; if (calMonth < 0) { calMonth=11; calYear--; } else if (calMonth > 11) { calMonth=0; calYear++; } }
+  renderCal();
+}
+
+function onCellClick(dateStr) {
+  // 해당 날짜 예약 모달
+  const dayBooks = bookings.filter(b => b.start <= dateStr && b.end >= dateStr);
+  if (!dayBooks.length) {
+    // 예약하기 탭으로 이동 + 날짜 채우기
+    document.getElementById('f-start').value = dateStr;
+    document.getElementById('f-end').value   = dateStr;
+    switchTab('book');
+    return;
+  }
+  const d = new Date(dateStr + 'T00:00:00');
+  const label = `${d.getMonth()+1}월 ${d.getDate()}일 예약`;
+  const bodyHtml = `<div style="font-size:13px;font-weight:700;color:var(--text2);margin-bottom:10px">${label}</div>
+  <div class="modal-event-list">
+  ${dayBooks.map(b => {
+    const eq = equipments.find(e => e.id === b.equipId);
+    return `<div class="modal-event-card">
+      <div class="mec-user">${b.user}</div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:3px">${eq?eq.name:'—'}</div>
+      <div class="mec-date">${b.start} ~ ${b.end}</div>
+      ${b.spec ? `<div class="mec-spec">${b.spec}</div>` : ''}
+      ${b.memo ? `<div class="mec-spec" style="color:var(--text3)">${b.memo}</div>` : ''}
+    </div>`;
+  }).join('')}
+  </div>`;
+  document.getElementById('modal-body').innerHTML = bodyHtml;
+  document.querySelector('.modal-title').textContent = label;
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+// ── 내 예약 ──
+function renderMine() {
+  const filter = document.getElementById('mine-filter')?.value || '';
+  const now = today();
+  let items = bookings.filter(b => b.end >= now);
+  if (filter) items = items.filter(b => b.user === filter);
+  items.sort((a,b) => a.start.localeCompare(b.start));
+
+  const list = document.getElementById('my-list');
+  if (!items.length) {
+    list.innerHTML = '<div class="empty-state"><div class="big">📭</div>예약 내역이 없습니다</div>';
+    return;
+  }
+
+  list.innerHTML = items.map(b => {
+    const eq = equipments.find(e => e.id === b.equipId);
+    return `<div class="my-item">
+      <div class="my-item-header">
+        <div>
+          <div class="my-item-name">${b.user}</div>
+          <div class="my-item-equip">${eq ? eq.name : '장비 삭제됨'}</div>
+        </div>
+        <button class="del-btn" onclick="deleteBooking('${b.id}','${b.user}')">취소</button>
+      </div>
+      <div class="my-item-date">${b.start} ~ ${b.end}</div>
+      ${b.spec  ? `<div class="my-item-spec">${b.spec}</div>` : ''}
+      ${b.memo  ? `<div style="font-size:11px;color:var(--text3);margin-top:4px">${b.memo}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+// ── 장비 관리 ──
+function renderMgmt() {
+  const list = document.getElementById('mgmt-list');
+  if (!equipments.length) {
+    list.innerHTML = '<div class="empty-state" style="padding:20px">등록된 장비 없음</div>';
+    return;
+  }
+  list.innerHTML = equipments.map(e => `
+    <div class="mgmt-item">
+      <div class="mgmt-item-info">
+        <div class="mgmt-item-name">${e.name}
+          <span class="badge ${STATUS_BADGE[e.status]||'badge-gray'}" style="margin-left:6px;font-size:9px">${STATUS_LABELS[e.status]||e.status}</span>
+        </div>
+        <div class="mgmt-item-meta">${e.code||'—'} · ${e.size||'—'}</div>
+      </div>
+      <div class="mgmt-actions">
+        <button class="mgmt-btn" onclick="toggleStatus('${e.id}','${e.status}')">상태변경</button>
+        <button class="mgmt-btn danger" onclick="retireEquip('${e.id}','${e.name}')">폐기</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function updateBadge() {
+  const upcomingMine = bookings.filter(b => b.end >= today()).length;
+  const el = document.getElementById('badge-count');
+  if (el) el.textContent = upcomingMine ? `예약 ${upcomingMine}건` : '실시간 동기화';
+}
+
+// ═══════════════════════════════════════════════
+//  인터랙션
+// ═══════════════════════════════════════════════
+function switchTab(t) {
+  activeTab = t;
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => {
+    b.classList.toggle('active', b.dataset.tab === t);
+  });
+  document.getElementById('sec-'+t).classList.add('active');
+  renderAll();
+}
+
+function onUserChange() {
+  const v = document.getElementById('f-user').value;
+  document.getElementById('custom-user-group').style.display = v==='직접입력' ? 'block' : 'none';
+}
+
+function checkConflict() {
+  const equipId = document.getElementById('f-equip').value;
+  const start   = document.getElementById('f-start').value;
+  const end     = document.getElementById('f-end').value;
+  const warn    = document.getElementById('conflict-warning');
+  warn.style.display = 'none';
+
+  if (!equipId || !start || !end) return;
+  const conflicts = bookings.filter(b =>
+    b.equipId === equipId && b.start <= end && b.end >= start
+  );
+  if (conflicts.length) {
+    warn.style.display = 'block';
+    warn.textContent = `⚠ ${conflicts.map(c=>c.user).join(', ')}의 예약과 기간이 겹칩니다`;
+  }
+}
+
+async function submitBooking() {
+  const userSel = document.getElementById('f-user').value;
+  const user    = userSel === '직접입력'
+    ? document.getElementById('f-custom-user').value.trim()
+    : userSel;
+  const equipId = document.getElementById('f-equip').value;
+  const spec    = document.getElementById('f-spec').value.trim();
+  const start   = document.getElementById('f-start').value;
+  const end     = document.getElementById('f-end').value;
+  const memo    = document.getElementById('f-memo').value.trim();
+
+  if (!user || !equipId || !start || !end) { showToast('필수 항목을 모두 입력해주세요', 'error'); return; }
+  if (end < start) { showToast('종료일이 시작일보다 이른 날짜입니다', 'error'); return; }
+
+  const btn = document.getElementById('submit-btn');
+  btn.disabled = true;
+  btn.textContent = '등록 중...';
+
+  try {
+    await fbFns.addDoc(fbFns.collection(db, 'bookings'), {
+      user, equipId, spec, start, end, memo,
+      createdAt: fbFns.serverTimestamp()
+    });
+    showToast('예약이 등록되었습니다!', 'success');
+    document.getElementById('f-spec').value = '';
+    document.getElementById('f-memo').value = '';
+    document.getElementById('conflict-warning').style.display = 'none';
+    switchTab('mine');
+  } catch(err) {
+    console.error(err);
+    showToast('등록에 실패했습니다. 연결을 확인해주세요', 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '예약 등록';
+  }
+}
+
+async function deleteBooking(id, user) {
+  if (!confirm(`${user}의 예약을 취소하시겠습니까?`)) return;
+  try {
+    await fbFns.deleteDoc(fbFns.doc(db, 'bookings', id));
+    showToast('예약이 취소되었습니다', 'success');
+  } catch(err) {
+    showToast('취소에 실패했습니다', 'error');
+  }
+}
+
+async function addEquipment() {
+  const name   = document.getElementById('m-name').value.trim();
+  const code   = document.getElementById('m-code').value.trim();
+  const size   = document.getElementById('m-size').value.trim();
+  const mode   = document.getElementById('m-mode').value.trim();
+  const status = document.querySelector('input[name="m-status"]:checked').value;
+
+  if (!name) { showToast('장비명을 입력해주세요', 'error'); return; }
+
+  try {
+    await fbFns.addDoc(fbFns.collection(db, 'equipments'), {
+      name, code, size, mode, status,
+      createdAt: fbFns.serverTimestamp()
+    });
+    showToast(`"${name}" 추가 완료!`, 'success');
+    ['m-name','m-code','m-size','m-mode'].forEach(id => document.getElementById(id).value='');
+  } catch(err) {
+    showToast('추가에 실패했습니다', 'error');
+  }
+}
+
+const STATUS_CYCLE = { available:'inuse', inuse:'fixed', fixed:'broken', broken:'available' };
+const STATUS_CYCLE_LABEL = { available:'→ 사용 중', inuse:'→ 전용 장비', fixed:'→ 고장/폐기', broken:'→ 사용 가능' };
+
+async function toggleStatus(id, cur) {
+  const next = STATUS_CYCLE[cur] || 'available';
+  const label = STATUS_CYCLE_LABEL[cur];
+  if (!confirm(`상태를 변경하시겠습니까? (${STATUS_LABELS[cur]} ${label})`)) return;
+  try {
+    await fbFns.updateDoc(fbFns.doc(db, 'equipments', id), { status: next });
+    showToast('상태가 변경되었습니다', 'success');
+  } catch(err) {
+    showToast('변경에 실패했습니다', 'error');
+  }
+}
+
+async function retireEquip(id, name) {
+  if (!confirm(`"${name}"을 폐기 처리하시겠습니까?\n연관된 예약 일정은 별도로 확인해주세요.`)) return;
+  try {
+    await fbFns.updateDoc(fbFns.doc(db, 'equipments', id), { status: 'broken' });
+    showToast(`"${name}" 폐기 처리되었습니다`, 'success');
+  } catch(err) {
+    showToast('처리에 실패했습니다', 'error');
+  }
+}
+
+function openEquipModal(id) {
+  const eq = equipments.find(e => e.id === id);
+  if (!eq) return;
+  const now = today();
+  const myBooks = bookings
+    .filter(b => b.equipId === id && b.end >= now)
+    .sort((a,b) => a.start.localeCompare(b.start));
+
+  const c = getColor(id);
+  const bodyHtml = `
+    <div class="modal-equip-name">${eq.name}</div>
+    <div class="modal-equip-code">${eq.code||'—'} · ${eq.size||'—'}</div>
+    <div style="margin-bottom:12px">
+      <span class="badge ${STATUS_BADGE[eq.status]||'badge-gray'}">${STATUS_LABELS[eq.status]||'—'}</span>
+      ${eq.mode ? `<span style="font-size:11px;color:var(--text3);margin-left:8px">${eq.mode}</span>` : ''}
+    </div>
+    <div class="section-label">예정 예약 (${myBooks.length}건)</div>
+    ${!myBooks.length
+      ? '<div style="color:var(--text3);font-size:12px;padding:10px 0">예약 없음</div>'
+      : `<div class="modal-event-list">${myBooks.map(b => `
+          <div class="modal-event-card" style="border-left-color:${COLOR_STYLES[c].split(';')[1].split(':')[1]}">
+            <div class="mec-user">${b.user}</div>
+            <div class="mec-date">${b.start} ~ ${b.end}</div>
+            ${b.spec ? `<div class="mec-spec">${b.spec}</div>` : ''}
+          </div>`).join('')}
+        </div>`
+    }
+    <button class="submit-btn" style="margin-top:16px" onclick="goBookEquip('${id}');closeModalDirect()">이 장비로 예약하기</button>
+  `;
+  document.getElementById('modal-body').innerHTML = bodyHtml;
+  document.querySelector('.modal-title').textContent = '장비 상세';
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function goBookEquip(id) {
+  document.getElementById('f-equip').value = id;
+  switchTab('book');
+}
+
+function closeModal(e) {
+  if (e.target === document.getElementById('modal-overlay')) closeModalDirect();
+}
+function closeModalDirect() {
+  document.getElementById('modal-overlay').classList.remove('open');
+}
+
+// 날짜 기본값
+const td = new Date();
+document.getElementById('f-start').value = fmt(td);
+const te = new Date(td); te.setDate(te.getDate()+5);
+document.getElementById('f-end').value = fmt(te);
+</script>
+</body>
+</html>

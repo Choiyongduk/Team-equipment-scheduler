@@ -635,16 +635,6 @@ html, body {
       </div>
       <div class="cal-body" id="cal-body"></div>
 
-      <!-- ── 장비별 타임라인 테이블 ── -->
-      <div style="padding:14px 0 0">
-        <div style="padding:0 14px 8px;display:flex;align-items:center;justify-content:space-between">
-          <div style="font-size:10px;font-weight:700;color:var(--text3);letter-spacing:1px;text-transform:uppercase">장비별 예약 현황</div>
-          <div style="font-size:10px;color:var(--text3)">← 좌우로 스크롤</div>
-        </div>
-        <div style="overflow-x:auto;-webkit-overflow-scrolling:touch" id="timeline-scroll">
-          <div id="timeline-table"></div>
-        </div>
-      </div>
     </div>
 
     <!-- ══ 예약하기 ══ -->
@@ -689,6 +679,17 @@ html, body {
           <input type="text" class="form-control" id="f-memo" placeholder="특이사항 입력">
         </div>
         <button class="submit-btn" id="submit-btn" onclick="submitBooking()">예약 등록</button>
+      </div>
+    </div>
+
+    <!-- ══ 타임라인 (달력탭 하단) ══ -->
+    <div id="sec-timeline" style="display:none;border-top:1px solid var(--border)">
+      <div style="padding:10px 14px 6px;display:flex;align-items:center;justify-content:space-between">
+        <div style="font-size:10px;font-weight:700;color:var(--text3);letter-spacing:1px;text-transform:uppercase">장비별 예약 현황</div>
+        <div style="font-size:10px;color:var(--text3)">← 좌우로 스크롤</div>
+      </div>
+      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:20px" id="timeline-scroll">
+        <div id="timeline-table"></div>
       </div>
     </div>
 
@@ -1092,7 +1093,8 @@ function renderCal() {
 
 function renderTimeline() {
   const wrap = document.getElementById('timeline-table');
-  if (!wrap) return;
+  if (!wrap) { console.log('timeline-table div not found'); return; }
+  console.log('renderTimeline called, equipments:', equipments.length, 'bookings:', bookings.length);
 
   const todayStr = today();
   // 이번 달 날짜 배열 생성
@@ -1309,8 +1311,10 @@ function switchTab(t) {
   // 장비현황 탭일 때만 시험실 필터 표시
   const fb = document.getElementById('grp-filter-bar');
   if (fb) fb.style.display = t === 'list' ? 'flex' : 'none';
+  // 달력 탭일 때만 타임라인 섹션 표시
+  const tl = document.getElementById('sec-timeline');
+  if (tl) tl.style.display = t === 'cal' ? 'block' : 'none';
   renderAll();
-  // 달력 탭 전환시 타임라인 바로 그리기
   if (t === 'cal') setTimeout(() => renderTimeline(), 100);
 }
 

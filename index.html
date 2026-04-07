@@ -863,6 +863,7 @@ window.addEventListener('firebase-ready', async () => {
     snap => {
       equipments = snap.docs.map(d => ({ id: d.id, ...d.data() }));
       renderAll();
+      if (activeTab === 'cal') renderTimeline();
     }
   );
 
@@ -873,6 +874,8 @@ window.addEventListener('firebase-ready', async () => {
       bookings = snap.docs.map(d => ({ id: d.id, ...d.data() }));
       renderAll();
       updateBadge();
+      // 달력 탭이면 타임라인도 즉시 갱신
+      if (activeTab === 'cal') renderTimeline();
     }
   );
 
@@ -1307,6 +1310,8 @@ function switchTab(t) {
   const fb = document.getElementById('grp-filter-bar');
   if (fb) fb.style.display = t === 'list' ? 'flex' : 'none';
   renderAll();
+  // 달력 탭 전환시 타임라인 바로 그리기
+  if (t === 'cal') setTimeout(() => renderTimeline(), 100);
 }
 
 function onUserChange() {

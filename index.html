@@ -541,10 +541,18 @@ html, body {
     </button>
   </div>
 
+  <!-- 시험실 필터 탭 - content 밖에 배치해야 폰에서도 고정됨 -->
+  <div id="grp-filter-bar" style="display:flex;gap:6px;padding:8px 12px;overflow-x:auto;border-bottom:1px solid var(--border);background:var(--bg);flex-shrink:0;scrollbar-width:none;-webkit-overflow-scrolling:touch">
+    <button class="grp-btn active" onclick="setGroup('all',this)" style="flex-shrink:0;padding:6px 14px;border-radius:20px;border:1px solid var(--border2);background:var(--accent);color:#0e1117;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:var(--font)">전체</button>
+    <button class="grp-btn" onclick="setGroup('내후환경시험실',this)" style="flex-shrink:0;padding:6px 14px;border-radius:20px;border:1px solid var(--border2);background:none;color:var(--text2);font-size:12px;cursor:pointer;white-space:nowrap;font-family:var(--font)">내후환경시험실</button>
+    <button class="grp-btn" onclick="setGroup('내환경시험실',this)" style="flex-shrink:0;padding:6px 14px;border-radius:20px;border:1px solid var(--border2);background:none;color:var(--text2);font-size:12px;cursor:pointer;white-space:nowrap;font-family:var(--font)">내환경시험실</button>
+    <button class="grp-btn" onclick="setGroup('염수분무시험실',this)" style="flex-shrink:0;padding:6px 14px;border-radius:20px;border:1px solid var(--border2);background:none;color:var(--text2);font-size:12px;cursor:pointer;white-space:nowrap;font-family:var(--font)">염수분무시험실</button>
+  </div>
+
   <div class="content">
     <!-- ══ 장비현황 ══ -->
-    <div id="sec-list" class="section active pad">
-      <div id="equip-list-wrap"></div>
+    <div id="sec-list" class="section active">
+      <div class="pad" id="equip-list-wrap"></div>
     </div>
 
     <!-- ══ 달력 ══ -->
@@ -706,6 +714,20 @@ let members = [
 let calYear = new Date().getFullYear();
 let calMonth = new Date().getMonth(); // 0-based
 let activeTab = 'list';
+let activeGroup = 'all';
+
+function setGroup(g, btn) {
+  activeGroup = g;
+  document.querySelectorAll('.grp-btn').forEach(b => {
+    b.style.background = 'none';
+    b.style.color = 'var(--text2)';
+    b.style.borderColor = 'var(--border2)';
+  });
+  btn.style.background = 'var(--accent)';
+  btn.style.color = '#0e1117';
+  btn.style.borderColor = 'var(--accent)';
+  renderEquipList();
+}
 
 const COLORS = ['accent','blue','amber','purple','coral','red'];
 const COLOR_MAP = {};
@@ -884,8 +906,9 @@ function renderEquipList() {
   }
 
   // 실효 상태 기준으로 그룹화
+  const filtered = activeGroup === 'all' ? equipments : equipments.filter(e => e.group === activeGroup);
   const groups = { available:[], inuse:[], fixed:[], broken:[] };
-  equipments.forEach(e => { groups[effectiveStatus(e)].push(e); });
+  filtered.forEach(e => { groups[effectiveStatus(e)].push(e); });
 
   let html = '';
   const renderGroup = (label, items, badgeCls) => {
@@ -1105,6 +1128,9 @@ function switchTab(t) {
     b.classList.toggle('active', b.dataset.tab === t);
   });
   document.getElementById('sec-'+t).classList.add('active');
+  // 장비현황 탭일 때만 시험실 필터 표시
+  const fb = document.getElementById('grp-filter-bar');
+  if (fb) fb.style.display = t === 'list' ? 'flex' : 'none';
   renderAll();
 }
 

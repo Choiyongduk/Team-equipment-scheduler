@@ -1100,114 +1100,90 @@ function renderCal() {
 function renderTimeline() {
   const wrap = document.getElementById('timeline-table');
   if (!wrap) return;
-  // 부모 스크롤 컨테이너에 터치 스크롤 보장
-  const scrollEl = document.getElementById('timeline-scroll');
-  if (scrollEl) { scrollEl.style.overflowX = 'scroll'; scrollEl.style.webkitOverflowScrolling = 'touch'; }
 
   const todayStr = today();
-  // 이번 달 날짜 배열 생성
   const days = [];
-  const firstDay = new Date(calYear, calMonth, 1);
-  const lastDay  = new Date(calYear, calMonth+1, 0);
+  const lastDay = new Date(calYear, calMonth+1, 0);
   for (let d = 1; d <= lastDay.getDate(); d++) {
     const dt = fmt(new Date(calYear, calMonth, d));
-    const dow = new Date(dt+'T00:00:00').getDay();
-    days.push({ date: dt, dow });
+    days.push({ date: dt, dow: new Date(dt+'T00:00:00').getDay() });
   }
 
-  // 장비 필터 (달력 필터와 동일)
   const selEquip = document.getElementById('cal-filter-equip')?.value || 'all';
-  const showEquips = selEquip === 'all'
+  const showEquips = (selEquip === 'all'
     ? equipments.filter(e => e.status !== 'broken')
-    : equipments.filter(e => e.id === selEquip && e.status !== 'broken');
-
-  // 시험실 그룹순 정렬
-  const groupOrder = ['내후환경시험실','내환경시험실','염수분무시험실'];
-  showEquips.sort((a,b) => {
-    const ga = groupOrder.indexOf(a.group||''), gb = groupOrder.indexOf(b.group||'');
-    return ga - gb;
+    : equipments.filter(e => e.id === selEquip)
+  ).slice().sort((a,b) => {
+    const o = ['내후환경시험실','내환경시험실','염수분무시험실'];
+    return o.indexOf(a.group||'') - o.indexOf(b.group||'');
   });
 
-  // 색상 순환
-  const BOOK_CLASSES = ['booked','booked-blue','booked-amber','booked-purple','booked-coral'];
-  const colorIdx = {};
-  let colorCnt = 0;
+  const BK = ['booked','booked-blue','booked-amber','booked-purple','booked-coral'];
+  const uColor = {};
+  let uCnt = 0;
 
-  // 헤더 행
-  let html = '<table class="tl-table"><thead><tr>';
-  html += '<th class="tl-equip-cell" style="font-size:10px;color:var(--text3);border-bottom:1px solid var(--border2)">장비명</th>';
+  // 빠른 예약 조회용 맵 생성 (equipId → bookings)
+  const bookMap = {};
+  bookings.forEach(b => {
+    if (!bookMap[b.equipId]) bookMap[b.equipId] = [];
+    bookMap[b.equipId].push(b);
+  });
+
+  const rows = [];
+  const d0 = days[0].date, dN = days[days.length-1].date;
+
+  // 헤더
+  const hCells = ['<th class="tl-equip-cell" style="font-size:10px;color:var(--text3)">장비명</th>'];
   days.forEach(d => {
-    const isSat = d.dow === 6, isSun = d.dow === 0, isToday = d.date === todayStr;
-    const cls = isToday ? 'today-h' : isSat ? 'sat-h' : isSun ? 'sun-h' : '';
-    const dd = new Date(d.date+'T00:00:00').getDate();
-    html += `<th class="tl-day-header ${cls}">${dd}</th>`;
+    const cls = d.date===todayStr ? 'today-h' : d.dow===6 ? 'sat-h' : d.dow===0 ? 'sun-h' : '';
+    hCells.push('<th class="tl-day-header ' + cls + '">' + new Date(d.date+'T00:00:00').getDate() + '</th>');
   });
-  html += '</tr></thead><tbody>';
+  rows.push('<thead><tr>' + hCells.join('') + '</tr></thead>');
 
-  // 장비별 행
+  // 바디 - 장비별 행
+  const bodyRows = [];
   let prevGroup = null;
+
   showEquips.forEach(eq => {
-    // 시험실 그룹 구분선
     if (eq.group && eq.group !== prevGroup) {
       prevGroup = eq.group;
-      const colSpan = days.length + 1;
-      html += `<tr><td colspan="${colSpan}" style="padding:4px 8px;font-size:9px;font-weight:700;color:var(--text3);background:var(--bg3);letter-spacing:.5px;text-transform:uppercase;border-bottom:1px solid var(--border2)">${eq.group}</td></tr>`;
+      bodyRows.push('<tr><td colspan="' + (days.length+1) + '" style="padding:3px 8px;font-size:9px;font-weight:700;color:var(--text3);background:var(--bg3);letter-spacing:.5px;text-transform:uppercase;border-bottom:1px solid var(--border2)">' + eq.group + '</td></tr>');
     }
 
-    // 이 장비의 이번 달 예약 목록
-    const myBooks = bookings.filter(b => b.equipId === eq.id && b.end >= days[0].date && b.start <= days[days.length-1].date);
+    const myBooks = (bookMap[eq.id]||[]).filter(b => b.end >= d0 && b.start <= dN);
+    myBooks.forEach(b => { if (!uColor[b.user]) uColor[b.user] = BK[uCnt++ % BK.length]; });
 
-    // 사용자별 색상 고정
-    myBooks.forEach(b => {
-      if (!colorIdx[b.user]) colorIdx[b.user] = BOOK_CLASSES[colorCnt++ % BOOK_CLASSES.length];
-    });
-
-    html += '<tr>';
-    // 장비명 셀
     const effSt = effectiveStatus(eq);
-    const stDot = effSt === 'inuse' ? '#5b8dee' : effSt === 'fixed' ? '#f5a623' : effSt === 'broken' ? '#e05252' : '#3ecf8e';
-    html += `<td class="tl-equip-cell">
-      <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:${stDot};margin-right:4px;vertical-align:middle;flex-shrink:0"></span>${eq.name}
-    </td>`;
+    const dot = effSt==='inuse'?'#5b8dee':effSt==='fixed'?'#f5a623':effSt==='broken'?'#e05252':'#3ecf8e';
+    const nameTd = '<td class="tl-equip-cell"><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:' + dot + ';margin-right:4px;vertical-align:middle"></span>' + eq.name + '</td>';
 
-    // 날짜별 셀
+    const cells = [nameTd];
     days.forEach(d => {
-      const isToday = d.date === todayStr;
-      // 이 날짜에 걸치는 예약 찾기
       const book = myBooks.find(b => b.start <= d.date && b.end >= d.date);
-      const isStart = book && book.start === d.date;
-
+      const tc = d.date===todayStr ? ' today-col' : '';
       if (book) {
-        const cls = colorIdx[book.user] || 'booked';
-        const todayCls = isToday ? ' today-col' : '';
-        const label = isStart ? `<span class="tl-label">${book.user.split('_').slice(-1)[0]||book.user} ${book.spec||''}</span>` : '';
-        html += `<td class="tl-cell ${cls}${todayCls}">${label}</td>`;
+        const cls = uColor[book.user] || 'booked';
+        const isStart = book.start === d.date;
+        const lbl = isStart ? '<span class="tl-label">' + (book.user.split('_').pop()||book.user) + (book.spec?' '+book.spec:'') + '</span>' : '';
+        cells.push('<td class="tl-cell ' + cls + tc + '">' + lbl + '</td>');
       } else if (eq.status === 'fixed') {
-        html += `<td class="tl-cell${isToday?' today-col':''}" style="background:rgba(245,166,35,.07)"><span class="tl-fixed-badge" style="${isToday?'':''}"></span></td>`;
+        cells.push('<td class="tl-cell' + tc + '" style="background:rgba(245,166,35,.06)"></td>');
       } else {
-        html += `<td class="tl-cell${isToday?' today-col':''}"></td>`;
+        cells.push('<td class="tl-cell' + tc + '"></td>');
       }
     });
-
-    html += '</tr>';
+    bodyRows.push('<tr>' + cells.join('') + '</tr>');
   });
 
-  html += '</tbody></table>';
-  wrap.innerHTML = html;
+  rows.push('<tbody>' + bodyRows.join('') + '</tbody>');
+  wrap.innerHTML = '<table class="tl-table">' + rows.join('') + '</table>';
 
-  // 오늘 날짜 컬럼으로 자동 스크롤
+  // 오늘 날짜로 스크롤
   const todayIdx = days.findIndex(d => d.date === todayStr);
   if (todayIdx > 0) {
-    const scroll = document.getElementById('timeline-scroll');
-    if (scroll) {
-      const cellW = 28;
-      const frozenW = 140;
-      setTimeout(() => {
-        scroll.scrollLeft = Math.max(0, frozenW + todayIdx * cellW - scroll.clientWidth / 2);
-      }, 50);
-    }
+    const sc = document.getElementById('timeline-scroll');
+    if (sc) setTimeout(() => { sc.scrollLeft = Math.max(0, 140 + todayIdx*28 - sc.clientWidth/2); }, 30);
   }
-  renderTimeline();
 }
 
 function moveMon(dir) {

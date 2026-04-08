@@ -553,6 +553,25 @@ html, body {
   font-size: 9px; color: var(--text3); font-style: italic;
   padding: 0 3px;
 }
+
+/* === FIX: group sticky === */
+.tl-group-sticky {
+  position: sticky;
+  left: 0;
+  z-index: 4;
+  min-width: 130px;
+  background: #eff6ff;
+  padding: 6px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #1d4ed8;
+  border-right: 1px solid #bfdbfe;
+  border-bottom: 1px solid #bfdbfe;
+  user-select: none;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
 </style>
 </head>
 <body>
@@ -1159,9 +1178,12 @@ function renderTimeline() {
       const arrow = collapsed ? '&#9654;' : '&#9660;';
       bodyRows.push(
         '<tr style="cursor:pointer">' +
-        '<td colspan="' + (days.length+1) + '" data-grp="' + eq.group + '" style="padding:6px 12px;font-size:11px;font-weight:700;color:#1d4ed8;background:#eff6ff;border-bottom:1px solid #bfdbfe;user-select:none;cursor:pointer">' +
-        '<span style="margin-right:6px;font-size:10px;display:inline-block;transition:transform .15s">' + arrow + '</span>' + eq.group +
-        '</td></tr>'
+          '<td class="tl-group-sticky" data-grp="' + eq.group + '">' +
+            '<span style="margin-right:6px;font-size:10px;display:inline-block;transition:transform .15s">' + arrow + '</span>' +
+            eq.group +
+          '</td>' +
+          '<td colspan="' + days.length + '" style="background:#eff6ff;border-bottom:1px solid #bfdbfe"></td>' +
+        '</tr>'
       );
     }
     if (window.tlGroupCollapsed[eq.group]) return;

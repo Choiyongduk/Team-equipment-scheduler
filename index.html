@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>장비 스케줄러 — FITI 의장소재팀</title>
 <meta name="description" content="FITI 의장소재팀 장비 사용 일정 관리">
 <meta name="theme-color" content="#ffffff">
@@ -102,6 +102,7 @@ html, body {
 /* ── 헤더 ── */
 .header {
   padding: 13px 16px 12px;
+  padding-top: max(13px, env(safe-area-inset-top, 13px));
   background: var(--bg2);
   border-bottom: 1px solid var(--border);
   display: flex;
@@ -142,6 +143,7 @@ html, body {
   flex-shrink: 0;
   padding: 0 2px;
   box-shadow: 0 1px 0 var(--border);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 .nav-btn {
   flex: 1; padding: 11px 2px;
@@ -314,7 +316,7 @@ html, body {
 .form-control {
   width: 100%; background: #ffffff; border: 1px solid var(--border2);
   border-radius: var(--radius); color: var(--text); font-family: var(--font);
-  font-size: 14px; padding: 10px 12px; outline: none;
+  font-size: 16px; padding: 10px 12px; outline: none;
   transition: border-color .15s;
 }
 .form-control:focus { border-color: var(--accent); }
@@ -438,7 +440,7 @@ html, body {
 
 /* ── 토스트 ── */
 .toast {
-  position: fixed; bottom: 70px; left: 50%;
+  position: fixed; bottom: calc(70px + env(safe-area-inset-bottom, 0px)); left: 50%;
   transform: translateX(-50%) translateY(20px);
   background: #1a2035; border: 1px solid rgba(255,255,255,.1);
   border-radius: 20px; padding: 9px 18px;
@@ -568,7 +570,7 @@ html, body {
 
   <!-- 헤더 -->
   <div class="header">
-    <div class="header-left">
+    <div class="header-left" onclick="switchTab('timeline')" style="cursor:pointer">
       <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzQiIGhlaWdodD0iMzQiIHZpZXdCb3g9IjAgMCAzNCAzNCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8Y2lyY2xlIGN4PSIxNyIgY3k9IjE3IiByPSIxNyIgZmlsbD0iIzEyNTFBMyIvPgogIDx0ZXh0IHg9IjE3IiB5PSIxNCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0id2hpdGUiIGZvbnQtc2l6ZT0iOCIgZm9udC1mYW1pbHk9IkFyaWFsLHNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSI3MDAiIGxldHRlci1zcGFjaW5nPSIxIj5GSVRJPC90ZXh0PgogIDx0ZXh0IHg9IjE3IiB5PSIyNCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzdlYjNmNSIgZm9udC1zaXplPSI1LjUiIGZvbnQtZmFtaWx5PSJBcmlhbCxzYW5zLXNlcmlmIiBmb250LXdlaWdodD0iNDAwIiBsZXR0ZXItc3BhY2luZz0iMC4zIj7si5ztl5jsl7Dqtazsm5A8L3RleHQ+Cjwvc3ZnPg==" width="34" height="34" style="border-radius:8px;flex-shrink:0" alt="FITI">
       <div>
         <div class="header-title">장비 스케줄러</div>
@@ -583,16 +585,16 @@ html, body {
 
   <!-- 탭 -->
   <div class="nav">
-    <button class="nav-btn active" data-tab="list" onclick="switchTab('list')">장비현황</button>
-    <button class="nav-btn" data-tab="cal" onclick="switchTab('cal')">달력</button>
+    <button class="nav-btn active" data-tab="timeline" onclick="switchTab('timeline')">현황표</button>
+    <button class="nav-btn" data-tab="list" onclick="switchTab('list')">장비현황</button>
     <button class="nav-btn" data-tab="book" onclick="switchTab('book')">예약</button>
     <button class="nav-btn" data-tab="mine" onclick="switchTab('mine')">내 예약</button>
-    <button class="nav-btn" data-tab="timeline" onclick="switchTab('timeline')">현황표</button>
+    <button class="nav-btn" data-tab="cal" onclick="switchTab('cal')">달력</button>
     <button class="nav-btn" data-tab="mgmt" onclick="switchTab('mgmt')">장비관리</button>
   </div>
 
   <!-- 시험실 필터 탭 - content 밖에 배치해야 폰에서도 고정됨 -->
-  <div id="grp-filter-bar" style="display:flex;gap:6px;padding:8px 12px;overflow-x:auto;border-bottom:1px solid var(--border);background:var(--bg);flex-shrink:0;scrollbar-width:none;-webkit-overflow-scrolling:touch">
+  <div id="grp-filter-bar" style="display:flex;gap:6px;padding:8px 12px;padding-left:max(12px,env(safe-area-inset-left));padding-right:max(12px,env(safe-area-inset-right));overflow-x:auto;border-bottom:1px solid var(--border);background:var(--bg);flex-shrink:0;scrollbar-width:none;-webkit-overflow-scrolling:touch">
     <button class="grp-btn active" onclick="setGroup('all',this)" style="flex-shrink:0;padding:6px 14px;border-radius:20px;border:1px solid var(--border2);background:var(--accent);color:#ffffff;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:var(--font)">전체</button>
     <button class="grp-btn" onclick="setGroup('내후환경시험실',this)" style="flex-shrink:0;padding:6px 14px;border-radius:20px;border:1px solid var(--border2);background:none;color:var(--text2);font-size:12px;cursor:pointer;white-space:nowrap;font-family:var(--font)">내후환경시험실</button>
     <button class="grp-btn" onclick="setGroup('내환경시험실',this)" style="flex-shrink:0;padding:6px 14px;border-radius:20px;border:1px solid var(--border2);background:none;color:var(--text2);font-size:12px;cursor:pointer;white-space:nowrap;font-family:var(--font)">내환경시험실</button>
@@ -601,7 +603,7 @@ html, body {
 
   <div class="content">
     <!-- ══ 장비현황 ══ -->
-    <div id="sec-list" class="section active">
+    <div id="sec-list" class="section">
       <div class="pad" id="equip-list-wrap"></div>
     </div>
 
@@ -690,13 +692,21 @@ html, body {
     </div>
 
     <!-- ══ 현황표 ══ -->
-    <div id="sec-timeline" class="section">
-      <div style="padding:10px 14px 6px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);background:var(--bg);position:sticky;top:0;z-index:5">
-        <span style="font-size:12px;font-weight:700;color:var(--text)">장비별 예약 현황</span>
-        <span style="font-size:10px;color:var(--text3)">← 좌우 스크롤</span>
+    <div id="sec-timeline" class="section active">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border);background:var(--bg2);position:sticky;top:0;z-index:5;box-shadow:0 1px 3px rgba(30,40,80,0.06)">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="font-size:15px;font-weight:700;color:var(--text)" id="tl-month-label">4월</span>
+          <span style="font-size:13px;color:var(--text3)" id="tl-year-label">2026</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px">
+          <span style="font-size:10px;color:var(--text3);margin-right:4px">← 가로 스크롤</span>
+          <button class="cal-nav-btn" onclick="moveTlMon(-1)">◀</button>
+          <button class="cal-nav-btn" onclick="moveTlMon(0)" style="font-size:10px;width:36px">오늘</button>
+          <button class="cal-nav-btn" onclick="moveTlMon(1)">▶</button>
+        </div>
       </div>
-      <div style="overflow-x:auto;overflow-y:visible;-webkit-overflow-scrolling:touch;padding-bottom:30px">
-        <div id="timeline-table" style="padding-bottom:10px"></div>
+      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:40px" id="timeline-scroll">
+        <div id="timeline-table"></div>
       </div>
     </div>
 
@@ -775,7 +785,7 @@ let members = [
 ];
 let calYear = new Date().getFullYear();
 let calMonth = new Date().getMonth(); // 0-based
-let activeTab = 'list';
+let activeTab = 'timeline';
 let activeGroup = 'all';
 
 function setGroup(g, btn) {
@@ -1091,6 +1101,14 @@ function renderCal() {
 function renderTimeline() {
   const wrap = document.getElementById('timeline-table');
   if (!wrap) return;
+  const sc = document.getElementById('timeline-scroll');
+  if (sc) sc.style.overflowX = 'scroll';
+
+  const MONTH_KR = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+  const mlEl = document.getElementById('tl-month-label');
+  const ylEl = document.getElementById('tl-year-label');
+  if (mlEl) mlEl.textContent = MONTH_KR[calMonth];
+  if (ylEl) ylEl.textContent = calYear;
 
   const todayStr = today();
   const days = [];
@@ -1100,67 +1118,68 @@ function renderTimeline() {
     days.push({ date: dt, dow: new Date(dt+'T00:00:00').getDay() });
   }
 
-  const selEquip = document.getElementById('cal-filter-equip')?.value || 'all';
-  const showEquips = (selEquip === 'all'
-    ? equipments.filter(e => e.status !== 'broken')
-    : equipments.filter(e => e.id === selEquip)
-  ).slice().sort((a,b) => {
-    const o = ['내후환경시험실','내환경시험실','염수분무시험실'];
-    return o.indexOf(a.group||'') - o.indexOf(b.group||'');
-  });
+  const groupOrder = ['내후환경시험실','내환경시험실','염수분무시험실'];
+  const showEquips = equipments.filter(e => e.status !== 'broken')
+    .slice().sort((a,b) => groupOrder.indexOf(a.group||'') - groupOrder.indexOf(b.group||''));
 
   const BK = ['booked','booked-blue','booked-amber','booked-purple','booked-coral'];
   const uColor = {};
   let uCnt = 0;
-
-  // 빠른 예약 조회용 맵 생성 (equipId → bookings)
   const bookMap = {};
-  bookings.forEach(b => {
-    if (!bookMap[b.equipId]) bookMap[b.equipId] = [];
-    bookMap[b.equipId].push(b);
-  });
-
-  const rows = [];
+  bookings.forEach(b => { if (!bookMap[b.equipId]) bookMap[b.equipId]=[]; bookMap[b.equipId].push(b); });
   const d0 = days[0].date, dN = days[days.length-1].date;
 
-  // 헤더
-  const hCells = ['<th class="tl-equip-cell" style="font-size:10px;color:var(--text3)">장비명</th>'];
+  if (!window.tlGroupCollapsed) window.tlGroupCollapsed = {};
+
+  const rows = [];
+  const hCells = ['<th class="tl-equip-cell" style="font-size:10px;font-weight:700;color:var(--text3);min-width:130px">장비명</th>'];
   days.forEach(d => {
-    const cls = d.date===todayStr ? 'today-h' : d.dow===6 ? 'sat-h' : d.dow===0 ? 'sun-h' : '';
+    const cls = d.date===todayStr?'today-h':d.dow===6?'sat-h':d.dow===0?'sun-h':'';
     hCells.push('<th class="tl-day-header ' + cls + '">' + new Date(d.date+'T00:00:00').getDate() + '</th>');
   });
   rows.push('<thead><tr>' + hCells.join('') + '</tr></thead>');
 
-  // 바디 - 장비별 행
   const bodyRows = [];
   let prevGroup = null;
 
   showEquips.forEach(eq => {
     if (eq.group && eq.group !== prevGroup) {
       prevGroup = eq.group;
-      bodyRows.push('<tr><td colspan="' + (days.length+1) + '" style="padding:3px 8px;font-size:9px;font-weight:700;color:var(--text3);background:var(--bg3);letter-spacing:.5px;text-transform:uppercase;border-bottom:1px solid var(--border2)">' + eq.group + '</td></tr>');
+      const collapsed = !!window.tlGroupCollapsed[eq.group];
+      const arrow = collapsed ? '&#9654;' : '&#9660;';
+      bodyRows.push(
+        '<tr class="tl-group-hdr" data-grp="' + eq.group + '" style="cursor:pointer">' +
+        '<td colspan="' + (days.length+1) + '" style="padding:5px 10px;font-size:11px;font-weight:700;color:#1d4ed8;background:#eff6ff;border-bottom:1px solid #dbeafe;user-select:none">' +
+        '<span style="margin-right:6px;font-size:10px">' + arrow + '</span>' + eq.group +
+        '</td></tr>'
+      );
     }
+    if (window.tlGroupCollapsed[eq.group]) return;
 
-    const myBooks = (bookMap[eq.id]||[]).filter(b => b.end >= d0 && b.start <= dN);
-    myBooks.forEach(b => { if (!uColor[b.user]) uColor[b.user] = BK[uCnt++ % BK.length]; });
+    const myBooks = (bookMap[eq.id]||[]).filter(b => b.end>=d0 && b.start<=dN);
+    myBooks.forEach(b => { if (!uColor[b.user]) uColor[b.user]=BK[uCnt++%BK.length]; });
 
     const effSt = effectiveStatus(eq);
-    const dot = effSt==='inuse'?'#5b8dee':effSt==='fixed'?'#f5a623':effSt==='broken'?'#e05252':'#3ecf8e';
-    const nameTd = '<td class="tl-equip-cell"><span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:' + dot + ';margin-right:4px;vertical-align:middle"></span>' + eq.name + '</td>';
+    const dot = effSt==='inuse'?'#2563eb':effSt==='fixed'?'#d97706':effSt==='broken'?'#dc2626':'#16a34a';
+    const modeTag = (effSt==='fixed' && eq.mode) ?
+      ' <span style="font-size:9px;color:#92400e;background:#fef3c7;border-radius:3px;padding:1px 4px">' + (eq.mode||'').split('\n').join(' ').substring(0,20) + '</span>' : '';
+
+    const nameTd = '<td class="tl-equip-cell tl-book-cell" data-eid="' + eq.id + '" data-date="" style="cursor:pointer">' +
+      '<span style="width:6px;height:6px;border-radius:50%;background:' + dot + ';display:inline-block;margin-right:5px;vertical-align:middle"></span>' +
+      eq.name + modeTag + '</td>';
 
     const cells = [nameTd];
     days.forEach(d => {
-      const book = myBooks.find(b => b.start <= d.date && b.end >= d.date);
-      const tc = d.date===todayStr ? ' today-col' : '';
+      const book = myBooks.find(b => b.start<=d.date && b.end>=d.date);
+      const tc = d.date===todayStr?' today-col':'';
       if (book) {
-        const cls = uColor[book.user] || 'booked';
-        const isStart = book.start === d.date;
-        const lbl = isStart ? '<span class="tl-label">' + (book.user.split('_').pop()||book.user) + (book.spec?' '+book.spec:'') + '</span>' : '';
-        cells.push('<td class="tl-cell ' + cls + tc + '">' + lbl + '</td>');
-      } else if (eq.status === 'fixed') {
-        cells.push('<td class="tl-cell' + tc + '" style="background:rgba(245,166,35,.06)"></td>');
+        const cls = uColor[book.user]||'booked';
+        const lbl = book.start===d.date ? '<span class="tl-label">' + (book.user.split('_').pop()||book.user) + (book.spec?' '+book.spec:'') + '</span>' : '';
+        cells.push('<td class="tl-cell ' + cls + tc + ' tl-book-cell" data-eid="' + eq.id + '" data-date="' + d.date + '">' + lbl + '</td>');
+      } else if (effSt==='fixed') {
+        cells.push('<td class="tl-cell' + tc + '" style="background:#fef9ef"></td>');
       } else {
-        cells.push('<td class="tl-cell' + tc + '"></td>');
+        cells.push('<td class="tl-cell tl-book-cell' + tc + '" data-eid="' + eq.id + '" data-date="' + d.date + '" style="cursor:pointer"></td>');
       }
     });
     bodyRows.push('<tr>' + cells.join('') + '</tr>');
@@ -1169,13 +1188,60 @@ function renderTimeline() {
   rows.push('<tbody>' + bodyRows.join('') + '</tbody>');
   wrap.innerHTML = '<table class="tl-table">' + rows.join('') + '</table>';
 
-  // 오늘 날짜로 스크롤
-  const todayIdx = days.findIndex(d => d.date === todayStr);
-  if (todayIdx > 0) {
-    const sc = document.getElementById('timeline-scroll');
-    if (sc) setTimeout(() => { sc.scrollLeft = Math.max(0, 140 + todayIdx*28 - sc.clientWidth/2); }, 30);
-  }
+  // 이벤트 위임 - 클릭 한 번만 바인딩
+  wrap.onclick = function(e) {
+    const grpHdr = e.target.closest('.tl-group-hdr');
+    if (grpHdr) {
+      const grp = grpHdr.dataset.grp;
+      window.tlGroupCollapsed[grp] = !window.tlGroupCollapsed[grp];
+      renderTimeline();
+      return;
+    }
+    const bookCell = e.target.closest('.tl-book-cell');
+    if (bookCell) {
+      const eid = bookCell.dataset.eid;
+      const dt = bookCell.dataset.date || today();
+      goBookFromTl(eid, dt);
+    }
+  };
+
+  const todayIdx = days.findIndex(d => d.date===todayStr);
+  if (todayIdx > 0 && sc) setTimeout(() => { sc.scrollLeft = Math.max(0, 130+todayIdx*28-sc.clientWidth/2); }, 30);
 }
+
+
+// 3번: 그룹 토글
+function toggleTlGroup(group) {
+  if (!window.tlGroupCollapsed) window.tlGroupCollapsed = {};
+  window.tlGroupCollapsed[group] = !window.tlGroupCollapsed[group];
+  renderTimeline();
+}
+
+// 4번: 현황표에서 예약으로 이동
+function goBookFromTl(equipId, dateStr) {
+  document.getElementById('f-equip').value = equipId;
+  if (dateStr) {
+    document.getElementById('f-start').value = dateStr;
+    document.getElementById('f-end').value = dateStr;
+  } else {
+    document.getElementById('f-start').value = today();
+    document.getElementById('f-end').value = today();
+  }
+  checkConflict();
+  switchTab('book');
+}
+
+// 2번: 현황표 월 이동
+function moveTlMon(dir) {
+  if (dir===0) { calYear=new Date().getFullYear(); calMonth=new Date().getMonth(); }
+  else {
+    calMonth += dir;
+    if (calMonth<0) { calMonth=11; calYear--; }
+    else if (calMonth>11) { calMonth=0; calYear++; }
+  }
+  renderTimeline();
+}
+
 
 function moveMon(dir) {
   if (dir === 0) { calYear = new Date().getFullYear(); calMonth = new Date().getMonth(); }
@@ -1251,20 +1317,61 @@ function renderMgmt() {
     list.innerHTML = '<div class="empty-state" style="padding:20px">등록된 장비 없음</div>';
     return;
   }
-  list.innerHTML = equipments.map(e => `
-    <div class="mgmt-item">
-      <div class="mgmt-item-info">
-        <div class="mgmt-item-name">${e.name}
-          <span class="badge ${STATUS_BADGE[e.status]||'badge-gray'}" style="margin-left:6px;font-size:9px">${STATUS_LABELS[e.status]||e.status}</span>
-        </div>
-        <div class="mgmt-item-meta">${e.code||'—'} · ${e.size||'—'}</div>
-      </div>
-      <div class="mgmt-actions">
-        <button class="mgmt-btn" onclick="toggleStatus('${e.id}','${e.status}')">상태변경</button>
-        <button class="mgmt-btn danger" onclick="retireEquip('${e.id}','${e.name}')">폐기</button>
-      </div>
-    </div>
-  `).join('');
+  const frag = equipments.map(e => {
+    const div = document.createElement('div');
+    div.className = 'mgmt-item';
+    const info = document.createElement('div');
+    info.className = 'mgmt-item-info';
+    const nameRow = document.createElement('div');
+    nameRow.className = 'mgmt-item-name';
+    nameRow.textContent = e.name;
+    const bdg = document.createElement('span');
+    bdg.className = 'badge ' + (STATUS_BADGE[e.status]||'badge-gray');
+    bdg.style.cssText = 'margin-left:6px;font-size:9px';
+    bdg.textContent = STATUS_LABELS[e.status]||e.status;
+    nameRow.appendChild(bdg);
+    const metaRow = document.createElement('div');
+    metaRow.className = 'mgmt-item-meta';
+    metaRow.textContent = (e.code||'-') + ' · ' + (e.size||'-');
+    const sel = document.createElement('select');
+    sel.id = 'status-sel-' + e.id;
+    sel.style.cssText = 'display:none;margin-top:6px;font-size:13px;padding:6px 8px;border-radius:6px;border:1px solid var(--border2);background:var(--bg2);color:var(--text);font-family:var(--font);width:100%';
+    [['available','사용 가능'],['inuse','사용 중'],['fixed','전용 장비'],['broken','고장']].forEach(([v,l]) => {
+      const opt = document.createElement('option');
+      opt.value = v; opt.textContent = l;
+      if (v===e.status) opt.selected = true;
+      sel.appendChild(opt);
+    });
+    sel.addEventListener('change', function(){ applyStatus(e.id, this.value); });
+    info.appendChild(nameRow);
+    info.appendChild(metaRow);
+    info.appendChild(sel);
+    const actions = document.createElement('div');
+    actions.className = 'mgmt-actions';
+    const stBtn = document.createElement('button');
+    stBtn.className = 'mgmt-btn';
+    stBtn.textContent = '상태변경';
+    stBtn.addEventListener('click', () => toggleStatus(e.id));
+    actions.appendChild(stBtn);
+    if (e.status !== 'broken') {
+      const retBtn = document.createElement('button');
+      retBtn.className = 'mgmt-btn danger';
+      retBtn.textContent = '폐기';
+      retBtn.addEventListener('click', () => retireEquip(e.id, e.name));
+      actions.appendChild(retBtn);
+    } else {
+      const retBdg = document.createElement('span');
+      retBdg.className = 'badge badge-red';
+      retBdg.style.cssText = 'font-size:10px;padding:4px 8px';
+      retBdg.textContent = '폐기됨';
+      actions.appendChild(retBdg);
+    }
+    div.appendChild(info);
+    div.appendChild(actions);
+    return div;
+  });
+  list.innerHTML = '';
+  frag.forEach(el => list.appendChild(el));
 }
 
 function updateBadge() {
@@ -1410,10 +1517,15 @@ async function addEquipment() {
 const STATUS_CYCLE = { available:'inuse', inuse:'fixed', fixed:'broken', broken:'available' };
 const STATUS_CYCLE_LABEL = { available:'→ 사용 중', inuse:'→ 전용 장비', fixed:'→ 고장/폐기', broken:'→ 사용 가능' };
 
-async function toggleStatus(id, cur) {
-  const next = STATUS_CYCLE[cur] || 'available';
-  const label = STATUS_CYCLE_LABEL[cur];
-  if (!confirm(`상태를 변경하시겠습니까? (${STATUS_LABELS[cur]} ${label})`)) return;
+function toggleStatus(id) {
+  const el = document.getElementById('status-sel-' + id);
+  if (!el) return;
+  el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+
+async function applyStatus(id, next) {
+  const cur = document.getElementById('status-sel-' + id);
+  if (cur) cur.style.display = 'none';
   try {
     await fbFns.updateDoc(fbFns.doc(db, 'equipments', id), { status: next });
     showToast('상태가 변경되었습니다', 'success');

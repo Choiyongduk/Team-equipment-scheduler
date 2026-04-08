@@ -787,6 +787,7 @@ let calYear = new Date().getFullYear();
 let calMonth = new Date().getMonth(); // 0-based
 let activeTab = 'timeline';
 let activeGroup = 'all';
+let timelineScrollRestore = null;
 
 function setGroup(g, btn) {
   activeGroup = g;
@@ -896,6 +897,7 @@ window.addEventListener('firebase-ready', async () => {
   }
 
   populateSelects();
+  window.bindTlClick();
 
   loading.classList.add('gone');
   setTimeout(() => { loading.style.display='none'; mainApp.style.display='flex'; }, 400);
@@ -1148,9 +1150,9 @@ function renderTimeline() {
       const collapsed = !!window.tlGroupCollapsed[eq.group];
       const arrow = collapsed ? '&#9654;' : '&#9660;';
       bodyRows.push(
-        '<tr class="tl-group-hdr" data-grp="' + eq.group + '" style="cursor:pointer">' +
-        '<td colspan="' + (days.length+1) + '" style="padding:5px 10px;font-size:11px;font-weight:700;color:#1d4ed8;background:#eff6ff;border-bottom:1px solid #dbeafe;user-select:none">' +
-        '<span style="margin-right:6px;font-size:10px">' + arrow + '</span>' + eq.group +
+        '<tr style="cursor:pointer">' +
+        '<td colspan="' + (days.length+1) + '" data-grp="' + eq.group + '" style="padding:6px 12px;font-size:11px;font-weight:700;color:#1d4ed8;background:#eff6ff;border-bottom:1px solid #bfdbfe;user-select:none;cursor:pointer">' +
+        '<span style="margin-right:6px;font-size:10px;display:inline-block;transition:transform .15s">' + arrow + '</span>' + eq.group +
         '</td></tr>'
       );
     }
@@ -1188,34 +1190,60 @@ function renderTimeline() {
   rows.push('<tbody>' + bodyRows.join('') + '</tbody>');
   wrap.innerHTML = '<table class="tl-table">' + rows.join('') + '</table>';
 
-  // 이벤트 위임 - 클릭 한 번만 바인딩
-  wrap.onclick = function(e) {
-    const grpHdr = e.target.closest('.tl-group-hdr');
-    if (grpHdr) {
-      const grp = grpHdr.dataset.grp;
-      window.tlGroupCollapsed[grp] = !window.tlGroupCollapsed[grp];
-      renderTimeline();
-      return;
-    }
-    const bookCell = e.target.closest('.tl-book-cell');
-    if (bookCell) {
-      const eid = bookCell.dataset.eid;
-      const dt = bookCell.dataset.date || today();
-      goBookFromTl(eid, dt);
-    }
-  };
+  // 클릭 이벤트는 document 레벨에서 처리 (tlTableClick)
 
   const todayIdx = days.findIndex(d => d.date===todayStr);
-  if (todayIdx > 0 && sc) setTimeout(() => { sc.scrollLeft = Math.max(0, 130+todayIdx*28-sc.clientWidth/2); }, 30);
+  if (sc) {
+    const restoreLeft = timelineScrollRestore;
+    setTimeout(() => {
+      if (restoreLeft !== null) {
+        sc.scrollLeft = restoreLeft;
+        timelineScrollRestore = null;
+      } else if (todayIdx > 0) {
+        sc.scrollLeft = Math.max(0, 130 + todayIdx * 28 - sc.clientWidth / 2);
+      }
+    }, 30);
+  }
 }
 
 
 // 3번: 그룹 토글
 function toggleTlGroup(group) {
   if (!window.tlGroupCollapsed) window.tlGroupCollapsed = {};
+  const sc = document.getElementById('timeline-scroll');
+  timelineScrollRestore = sc ? sc.scrollLeft : null;
   window.tlGroupCollapsed[group] = !window.tlGroupCollapsed[group];
   renderTimeline();
 }
+
+// 타임라인 클릭 - document에 한 번만 등록
+(function() {
+  let bound = false;
+  window.bindTlClick = function() {
+    if (bound) return;
+    bound = true;
+    document.addEventListener('click', function(e) {
+      // 그룹 헤더 클릭
+      const grpTd = e.target.closest('[data-grp]');
+      if (grpTd && grpTd.closest('#timeline-table')) {
+        const grp = grpTd.dataset.grp;
+        const sc = document.getElementById('timeline-scroll');
+        timelineScrollRestore = sc ? sc.scrollLeft : null;
+        if (!window.tlGroupCollapsed) window.tlGroupCollapsed = {};
+        window.tlGroupCollapsed[grp] = !window.tlGroupCollapsed[grp];
+        renderTimeline();
+        return;
+      }
+      // 예약 셀 클릭
+      const bookCell = e.target.closest('.tl-book-cell');
+      if (bookCell && bookCell.closest('#timeline-table')) {
+        const eid = bookCell.dataset.eid;
+        const dt = bookCell.dataset.date || today();
+        goBookFromTl(eid, dt);
+      }
+    });
+  };
+})();
 
 // 4번: 현황표에서 예약으로 이동
 function goBookFromTl(equipId, dateStr) {

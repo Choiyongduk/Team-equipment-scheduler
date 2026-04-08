@@ -570,7 +570,7 @@ html, body {
 
   <!-- 헤더 -->
   <div class="header">
-    <div class="header-left" onclick="switchTab('timeline')" style="cursor:pointer">
+    <div class="header-left" onclick="goTimelineHome()" style="cursor:pointer">
       <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzQiIGhlaWdodD0iMzQiIHZpZXdCb3g9IjAgMCAzNCAzNCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8Y2lyY2xlIGN4PSIxNyIgY3k9IjE3IiByPSIxNyIgZmlsbD0iIzEyNTFBMyIvPgogIDx0ZXh0IHg9IjE3IiB5PSIxNCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0id2hpdGUiIGZvbnQtc2l6ZT0iOCIgZm9udC1mYW1pbHk9IkFyaWFsLHNhbnMtc2VyaWYiIGZvbnQtd2VpZ2h0PSI3MDAiIGxldHRlci1zcGFjaW5nPSIxIj5GSVRJPC90ZXh0PgogIDx0ZXh0IHg9IjE3IiB5PSIyNCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzdlYjNmNSIgZm9udC1zaXplPSI1LjUiIGZvbnQtZmFtaWx5PSJBcmlhbCxzYW5zLXNlcmlmIiBmb250LXdlaWdodD0iNDAwIiBsZXR0ZXItc3BhY2luZz0iMC4zIj7si5ztl5jsl7Dqtazsm5A8L3RleHQ+Cjwvc3ZnPg==" width="34" height="34" style="border-radius:8px;flex-shrink:0" alt="FITI">
       <div>
         <div class="header-title">장비 스케줄러</div>
@@ -594,11 +594,11 @@ html, body {
   </div>
 
   <!-- 시험실 필터 탭 - content 밖에 배치해야 폰에서도 고정됨 -->
-  <div id="grp-filter-bar" style="display:flex;gap:6px;padding:8px 12px;padding-left:max(12px,env(safe-area-inset-left));padding-right:max(12px,env(safe-area-inset-right));overflow-x:auto;border-bottom:1px solid var(--border);background:var(--bg);flex-shrink:0;scrollbar-width:none;-webkit-overflow-scrolling:touch">
-    <button class="grp-btn active" onclick="setGroup('all',this)" style="flex-shrink:0;padding:6px 14px;border-radius:20px;border:1px solid var(--border2);background:var(--accent);color:#ffffff;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:var(--font)">전체</button>
-    <button class="grp-btn" onclick="setGroup('내후환경시험실',this)" style="flex-shrink:0;padding:6px 14px;border-radius:20px;border:1px solid var(--border2);background:none;color:var(--text2);font-size:12px;cursor:pointer;white-space:nowrap;font-family:var(--font)">내후환경시험실</button>
-    <button class="grp-btn" onclick="setGroup('내환경시험실',this)" style="flex-shrink:0;padding:6px 14px;border-radius:20px;border:1px solid var(--border2);background:none;color:var(--text2);font-size:12px;cursor:pointer;white-space:nowrap;font-family:var(--font)">내환경시험실</button>
-    <button class="grp-btn" onclick="setGroup('염수분무시험실',this)" style="flex-shrink:0;padding:6px 14px;border-radius:20px;border:1px solid var(--border2);background:none;color:var(--text2);font-size:12px;cursor:pointer;white-space:nowrap;font-family:var(--font)">염수분무시험실</button>
+  <div id="grp-filter-bar" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;padding:8px 12px;padding-left:max(12px,env(safe-area-inset-left));padding-right:max(12px,env(safe-area-inset-right));border-bottom:1px solid var(--border);background:var(--bg);flex-shrink:0">
+    <button class="grp-btn active" onclick="setGroup('all',this)" style="width:100%;padding:6px 10px;border-radius:20px;border:1px solid var(--border2);background:var(--accent);color:#ffffff;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:var(--font);text-align:center">전체</button>
+    <button class="grp-btn" onclick="setGroup('내후환경시험실',this)" style="width:100%;padding:6px 10px;border-radius:20px;border:1px solid var(--border2);background:none;color:var(--text2);font-size:12px;cursor:pointer;white-space:nowrap;font-family:var(--font);text-align:center">내후환경시험실</button>
+    <button class="grp-btn" onclick="setGroup('내환경시험실',this)" style="width:100%;padding:6px 10px;border-radius:20px;border:1px solid var(--border2);background:none;color:var(--text2);font-size:12px;cursor:pointer;white-space:nowrap;font-family:var(--font);text-align:center">내환경시험실</button>
+    <button class="grp-btn" onclick="setGroup('염수분무시험실',this)" style="width:100%;padding:6px 10px;border-radius:20px;border:1px solid var(--border2);background:none;color:var(--text2);font-size:12px;cursor:pointer;white-space:nowrap;font-family:var(--font);text-align:center">염수분무시험실</button>
   </div>
 
   <div class="content">
@@ -799,7 +799,13 @@ function setGroup(g, btn) {
   btn.style.background = 'var(--accent)';
   btn.style.color = '#ffffff';
   btn.style.borderColor = 'var(--accent)';
-  renderEquipList();
+
+  if (activeTab === 'timeline') {
+    timelineScrollRestore = 0;
+    renderTimeline();
+  } else {
+    renderEquipList();
+  }
 }
 
 const COLORS = ['accent','blue','amber','purple','coral','red'];
@@ -1121,7 +1127,9 @@ function renderTimeline() {
   }
 
   const groupOrder = ['내후환경시험실','내환경시험실','염수분무시험실'];
-  const showEquips = equipments.filter(e => e.status !== 'broken')
+  const showEquips = equipments
+    .filter(e => e.status !== 'broken')
+    .filter(e => activeGroup === 'all' || e.group === activeGroup)
     .slice().sort((a,b) => groupOrder.indexOf(a.group||'') - groupOrder.indexOf(b.group||''));
 
   const BK = ['booked','booked-blue','booked-amber','booked-purple','booked-coral'];
@@ -1411,6 +1419,18 @@ function updateBadge() {
 // ═══════════════════════════════════════════════
 //  인터랙션
 // ═══════════════════════════════════════════════
+function resetGroupFilterScroll() {
+  const fb = document.getElementById('grp-filter-bar');
+  if (fb) {
+    requestAnimationFrame(() => { fb.scrollLeft = 0; });
+  }
+}
+
+function goTimelineHome() {
+  timelineScrollRestore = 0;
+  switchTab('timeline');
+}
+
 function switchTab(t) {
   activeTab = t;
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
@@ -1418,9 +1438,12 @@ function switchTab(t) {
     b.classList.toggle('active', b.dataset.tab === t);
   });
   document.getElementById('sec-'+t).classList.add('active');
-  // 장비현황 탭일 때만 시험실 필터 표시
+  // 장비현황/현황표 탭일 때 시험실 필터 표시
   const fb = document.getElementById('grp-filter-bar');
-  if (fb) fb.style.display = t === 'list' ? 'flex' : 'none';
+  if (fb) {
+    fb.style.display = (t === 'list' || t === 'timeline') ? 'grid' : 'none';
+    if (t === 'list' || t === 'timeline') resetGroupFilterScroll();
+  }
   renderAll();
   if (t === 'timeline') setTimeout(() => renderTimeline(), 100);
 }

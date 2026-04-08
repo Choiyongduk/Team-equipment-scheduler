@@ -508,6 +508,17 @@ html, body {
   margin-top: 2px;
 }
 
+
+.fixed-cond-box {
+  margin-top: 6px;
+  font-size: 11px;
+  color: var(--amber);
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: 6px;
+  padding: 6px 8px;
+}
+
 /* ── 타임라인 테이블 ── */
 .tl-table { border-collapse: collapse; font-size: 11px; min-width: 100%; }
 .tl-equip-cell {
@@ -534,20 +545,38 @@ html, body {
   border-right: 0.5px solid var(--border);
   border-bottom: 0.5px solid var(--border);
   position: relative; vertical-align: middle;
+  overflow: visible;
 }
 .tl-cell.booked { background: #bbf7d0; }
 .tl-cell.booked-blue { background: #bfdbfe; }
 .tl-cell.booked-amber { background: #fde68a; }
 .tl-cell.booked-purple { background: #ddd6fe; }
 .tl-cell.booked-coral { background: #fecaca; }
-.tl-cell.today-col { background: #eff6ff; }
-.tl-cell.booked.today-col { background: #86efac; }
+.tl-cell.today-col { background: #eef5ff; }
+.tl-cell.booked.today-col { background: #a7f3d0; }
+.tl-cell.booked-blue.today-col { background: #93c5fd; }
+.tl-cell.booked-amber.today-col { background: #fcd34d; }
+.tl-cell.booked-purple.today-col { background: #c4b5fd; }
+.tl-cell.booked-coral.today-col { background: #fca5a5; }
 .tl-label {
-  position: absolute; left: 3px; top: 50%; transform: translateY(-50%);
-  font-size: 9px; font-weight: 700; color: #1a2035;
-  white-space: nowrap; overflow: hidden;
-  text-overflow: ellipsis; max-width: 140px;
+  position: absolute;
+  left: 3px;
+  font-size: 9px;
+  font-weight: 700;
+  color: #1a2035;
+  white-space: nowrap;
+  z-index: 20;
   pointer-events: none;
+}
+.tl-label.mid {
+  top: 50%;
+  transform: translateY(-50%);
+}
+.tl-label.top {
+  top: 4px;
+}
+.tl-label.bottom {
+  bottom: 4px;
 }
 .tl-fixed-badge {
   font-size: 9px; color: var(--text3); font-style: italic;
@@ -673,7 +702,17 @@ html, body {
   .pc-only { display: initial; }
 }
 
+
+.stats-chart-grid { display:grid; grid-template-columns:1fr; gap:14px; margin-top:14px; }
+.stats-chart-card { padding:14px; }
+.stats-chart-wrap { position:relative; height:260px; }
+@media (min-width: 900px) {
+  .stats-chart-grid { grid-template-columns:1fr 1fr; }
+}
+
 </style>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 
@@ -797,7 +836,7 @@ html, body {
           <label class="form-label">메모 (선택)</label>
           <input type="text" class="form-control" id="f-memo" placeholder="특이사항 입력">
         </div>
-        <button class="submit-btn" id="submit-btn" onclick="submitBooking()">예약 등록</button>
+        <button class="submit-btn" id="submit-btn" onclick="submitBooking()">예약 등록</button><button class="submit-btn" id="cancel-book-btn" onclick="cancelBookingForm()" style="display:none;background:#6b7280;margin-top:8px">취소</button>
       </div>
     </div>
 
@@ -834,6 +873,32 @@ html, body {
 
       <div class="pad stats-pad">
         <div class="stats-grid" id="stats-summary-cards"></div>
+
+        <div class="stats-chart-grid">
+          <div class="card stats-card stats-chart-card">
+            <div class="stats-card-head" style="padding:0 0 12px">
+              <div>
+                <div class="section-label" style="margin-bottom:4px">월별 예약 추이</div>
+                <div class="stats-card-sub">최근 6개월 예약 건수</div>
+              </div>
+            </div>
+            <div class="stats-chart-wrap">
+              <canvas id="stats-booking-trend-chart"></canvas>
+            </div>
+          </div>
+
+          <div class="card stats-card stats-chart-card">
+            <div class="stats-card-head" style="padding:0 0 12px">
+              <div>
+                <div class="section-label" style="margin-bottom:4px">상위 장비 가동률</div>
+                <div class="stats-card-sub">가동률 상위 8대 비교</div>
+              </div>
+            </div>
+            <div class="stats-chart-wrap">
+              <canvas id="stats-util-chart"></canvas>
+            </div>
+          </div>
+        </div>
 
         <div class="stats-desktop-grid">
           <div class="card stats-card">
@@ -914,6 +979,10 @@ html, body {
           <label class="form-label">예약 방식</label>
           <input type="text" class="form-control" id="m-mode" placeholder="예: 일정, 고정조건 xx℃, 전용 장비">
         </div>
+        <div class="form-group" id="fixed-condition-group" style="display:none">
+          <label class="form-label">고정조건</label>
+          <input type="text" class="form-control" id="m-fixed-condition" placeholder="예: 85℃ 고정 / 상시 가동 / RH 85%">
+        </div>
         <div class="form-group">
           <label class="form-label">초기 상태</label>
           <div class="status-select">
@@ -968,6 +1037,33 @@ let calMonth = new Date().getMonth(); // 0-based
 let activeTab = 'timeline';
 let activeGroup = 'all';
 let timelineScrollRestore = null;
+let editingBookingId = null;
+
+const USER_BOOKING_CLASSES = ['booked','booked-blue','booked-amber','booked-purple','booked-coral'];
+
+function hashString(str) {
+  str = String(str || '');
+  let h = 0;
+  for (let i = 0; i < str.length; i++) h = ((h << 5) - h) + str.charCodeAt(i);
+  return Math.abs(h);
+}
+
+function getUserBookingClass(user) {
+  return USER_BOOKING_CLASSES[hashString(user) % USER_BOOKING_CLASSES.length];
+}
+
+function getUserColorStyle(user) {
+  const cls = getUserBookingClass(user);
+  const map = {
+    'booked': COLOR_STYLES.accent,
+    'booked-blue': COLOR_STYLES.blue,
+    'booked-amber': COLOR_STYLES.amber,
+    'booked-purple': COLOR_STYLES.purple,
+    'booked-coral': COLOR_STYLES.coral
+  };
+  return map[cls] || COLOR_STYLES.accent;
+}
+
 
 function setGroup(g, btn) {
   activeGroup = g;
@@ -1083,6 +1179,8 @@ window.addEventListener('firebase-ready', async () => {
   }
 
   populateSelects();
+  document.querySelectorAll('input[name="m-status"]').forEach(r => r.addEventListener('change', toggleFixedConditionInput));
+  toggleFixedConditionInput();
   window.bindTlClick();
 
   loading.classList.add('gone');
@@ -1261,11 +1359,11 @@ function renderCal() {
 
     const pills = dayBooks.slice(0, 3).map(b => {
       const eq = equipments.find(e => e.id === b.equipId);
-      const c = eq ? getColor(eq.id) : 'accent';
+      const cStyle = getUserColorStyle(b.user);
       const label = selEquip === 'all'
         ? (eq ? eq.name.replace(/\(.*\)/,'').trim() : b.user)
         : (b.user.split('_')[1] || b.user);
-      return `<span class="cal-event-pill" style="${COLOR_STYLES[c]}" title="${b.user} ${b.spec||''}">${label}</span>`;
+      return `<span class="cal-event-pill" style="${cStyle}" title="${b.user} ${b.spec||''}">${label}</span>`;
     }).join('');
 
     const more = dayBooks.length > 3
@@ -1286,6 +1384,49 @@ function renderCal() {
     </div>`;
   }).join('');
 }
+
+
+function computeTimelineLabelPositions(showEquips, bookMap, days) {
+  const positions = {};
+  const active = [];
+
+  showEquips.forEach((eq, rowIdx) => {
+    const myBooks = (bookMap[eq.id] || []).filter(b => b.end >= days[0].date && b.start <= days[days.length - 1].date);
+
+    myBooks.forEach(b => {
+      const startIdx = days.findIndex(d => d.date === b.start);
+      if (startIdx === -1) return;
+
+      const endIdx = days.findIndex(d => d.date === b.end);
+      const effectiveEndIdx = endIdx === -1 ? days.length - 1 : endIdx;
+      const key = `${eq.id}__${b.id}`;
+
+      // Remove non-overlapping active labels
+      for (let i = active.length - 1; i >= 0; i--) {
+        if (active[i].endIdx < startIdx) {
+          active.splice(i, 1);
+        }
+      }
+
+      // Only consider visually nearby rows because far rows won't collide vertically
+      const overlapping = active.filter(x => !(x.endIdx < startIdx || effectiveEndIdx < x.startIdx) && Math.abs(x.rowIdx - rowIdx) <= 1);
+
+      if (!overlapping.length) {
+        positions[key] = 'mid';
+      } else {
+        overlapping.forEach(x => {
+          if (positions[x.key] === 'mid') positions[x.key] = 'top';
+        });
+        positions[key] = 'bottom';
+      }
+
+      active.push({ key, startIdx, endIdx: effectiveEndIdx, rowIdx });
+    });
+  });
+
+  return positions;
+}
+
 
 function renderTimeline() {
   const wrap = document.getElementById('timeline-table');
@@ -1313,12 +1454,10 @@ function renderTimeline() {
     .filter(e => activeGroup === 'all' || e.group === activeGroup)
     .slice().sort((a,b) => groupOrder.indexOf(a.group||'') - groupOrder.indexOf(b.group||''));
 
-  const BK = ['booked','booked-blue','booked-amber','booked-purple','booked-coral'];
-  const uColor = {};
-  let uCnt = 0;
   const bookMap = {};
   bookings.forEach(b => { if (!bookMap[b.equipId]) bookMap[b.equipId]=[]; bookMap[b.equipId].push(b); });
   const d0 = days[0].date, dN = days[days.length-1].date;
+  const tlLabelPositions = computeTimelineLabelPositions(showEquips, bookMap, days);
 
   if (!window.tlGroupCollapsed) window.tlGroupCollapsed = {};
 
@@ -1351,7 +1490,6 @@ function renderTimeline() {
     if (window.tlGroupCollapsed[eq.group]) return;
 
     const myBooks = (bookMap[eq.id]||[]).filter(b => b.end>=d0 && b.start<=dN);
-    myBooks.forEach(b => { if (!uColor[b.user]) uColor[b.user]=BK[uCnt++%BK.length]; });
 
     const effSt = effectiveStatus(eq);
     const dot = effSt==='inuse'?'#2563eb':effSt==='fixed'?'#d97706':effSt==='broken'?'#dc2626':'#16a34a';
@@ -1367,11 +1505,13 @@ function renderTimeline() {
       const book = myBooks.find(b => b.start<=d.date && b.end>=d.date);
       const tc = d.date===todayStr?' today-col':'';
       if (book) {
-        const cls = uColor[book.user]||'booked';
-        const lbl = book.start===d.date ? '<span class="tl-label">' + (book.user.split('_').pop()||book.user) + (book.spec?' '+book.spec:'') + '</span>' : '';
+        const cls = getUserBookingClass(book.user);
+        const labelPos = tlLabelPositions[eq.id + '__' + book.id] || 'mid';
+        const lbl = book.start===d.date ? '<span class="tl-label ' + labelPos + '">' + (book.user.split('_').pop()||book.user) + (book.spec?' '+book.spec:'') + '</span>' : '';
         cells.push('<td class="tl-cell ' + cls + tc + ' tl-book-cell" data-eid="' + eq.id + '" data-date="' + d.date + '">' + lbl + '</td>');
       } else if (effSt==='fixed') {
-        cells.push('<td class="tl-cell' + tc + '" style="background:#fef9ef"></td>');
+        const fixedBg = d.date===todayStr ? '#eef5ff' : '#fef9ef';
+        cells.push('<td class="tl-cell' + tc + '" style="background:' + fixedBg + '"></td>');
       } else {
         cells.push('<td class="tl-cell tl-book-cell' + tc + '" data-eid="' + eq.id + '" data-date="' + d.date + '" style="cursor:pointer"></td>');
       }
@@ -1431,7 +1571,12 @@ function toggleTlGroup(group) {
       if (bookCell && bookCell.closest('#timeline-table')) {
         const eid = bookCell.dataset.eid;
         const dt = bookCell.dataset.date || today();
-        goBookFromTl(eid, dt);
+        const targetBooking = bookings.find(b => b.equipId === eid && b.start <= dt && b.end >= dt);
+        if (targetBooking) {
+          startBookingEdit(targetBooking.id);
+        } else {
+          goBookFromTl(eid, dt);
+        }
       }
     });
   };
@@ -1439,6 +1584,7 @@ function toggleTlGroup(group) {
 
 // 4번: 현황표에서 예약으로 이동
 function goBookFromTl(equipId, dateStr) {
+  resetBookingForm();
   document.getElementById('f-equip').value = equipId;
   if (dateStr) {
     document.getElementById('f-start').value = dateStr;
@@ -1446,6 +1592,11 @@ function goBookFromTl(equipId, dateStr) {
   } else {
     document.getElementById('f-start').value = today();
     document.getElementById('f-end').value = today();
+  }
+  const cb = document.getElementById('cancel-book-btn');
+  if (cb) {
+    cb.textContent = '취소';
+    cb.style.display = 'block';
   }
   checkConflict();
   switchTab('book');
@@ -1473,9 +1624,14 @@ function onCellClick(dateStr) {
   // 해당 날짜 예약 모달
   const dayBooks = bookings.filter(b => b.start <= dateStr && b.end >= dateStr);
   if (!dayBooks.length) {
-    // 예약하기 탭으로 이동 + 날짜 채우기
+    resetBookingForm();
     document.getElementById('f-start').value = dateStr;
     document.getElementById('f-end').value   = dateStr;
+    const cb = document.getElementById('cancel-book-btn');
+    if (cb) {
+      cb.textContent = '취소';
+      cb.style.display = 'block';
+    }
     switchTab('book');
     return;
   }
@@ -1491,6 +1647,9 @@ function onCellClick(dateStr) {
       <div class="mec-date">${b.start} ~ ${b.end}</div>
       ${b.spec ? `<div class="mec-spec">${b.spec}</div>` : ''}
       ${b.memo ? `<div class="mec-spec" style="color:var(--text3)">${b.memo}</div>` : ''}
+      <div style="margin-top:8px">
+        <button class="mgmt-btn" onclick="closeModalDirect(); startBookingEdit('${b.id}')">수정</button>
+      </div>
     </div>`;
   }).join('')}
   </div>`;
@@ -1521,7 +1680,10 @@ function renderMine() {
           <div class="my-item-name">${b.user}</div>
           <div class="my-item-equip">${eq ? eq.name : '장비 삭제됨'}</div>
         </div>
-        <button class="del-btn" onclick="deleteBooking('${b.id}','${b.user}')">취소</button>
+        <div style="display:flex;gap:6px">
+          <button class="mgmt-btn" onclick="startBookingEdit('${b.id}')">수정</button>
+          <button class="del-btn" onclick="deleteBooking('${b.id}','${b.user}')">취소</button>
+        </div>
       </div>
       <div class="my-item-date">${b.start} ~ ${b.end}</div>
       ${b.spec  ? `<div class="my-item-spec">${b.spec}</div>` : ''}
@@ -1565,6 +1727,12 @@ function renderMgmt() {
     sel.addEventListener('change', function(){ applyStatus(e.id, this.value); });
     info.appendChild(nameRow);
     info.appendChild(metaRow);
+    if (e.status === 'fixed' && e.fixedCondition) {
+      const cond = document.createElement('div');
+      cond.className = 'fixed-cond-box';
+      cond.textContent = '고정조건: ' + e.fixedCondition;
+      info.appendChild(cond);
+    }
     info.appendChild(sel);
     const actions = document.createElement('div');
     actions.className = 'mgmt-actions';
@@ -1573,6 +1741,13 @@ function renderMgmt() {
     stBtn.textContent = '상태변경';
     stBtn.addEventListener('click', () => toggleStatus(e.id));
     actions.appendChild(stBtn);
+    if (e.status === 'fixed') {
+      const condBtn = document.createElement('button');
+      condBtn.className = 'mgmt-btn';
+      condBtn.textContent = '조건수정';
+      condBtn.addEventListener('click', () => editFixedCondition(e.id));
+      actions.appendChild(condBtn);
+    }
     if (e.status !== 'broken') {
       const retBtn = document.createElement('button');
       retBtn.className = 'mgmt-btn danger';
@@ -1593,6 +1768,60 @@ function renderMgmt() {
   list.innerHTML = '';
   frag.forEach(el => list.appendChild(el));
 }
+
+
+function toggleFixedConditionInput() {
+  const checked = document.querySelector('input[name="m-status"]:checked');
+  const show = checked && checked.value === 'fixed';
+  const grp = document.getElementById('fixed-condition-group');
+  if (grp) grp.style.display = show ? 'block' : 'none';
+}
+
+function getDefaultFixedBookingRange() {
+  const start = today();
+  const endDt = new Date();
+  endDt.setDate(endDt.getDate() + 364);
+  return { start, end: fmt(endDt) };
+}
+
+async function ensureFixedDefaultBooking(equipId, fixedCondition) {
+  const now = today();
+  const hasFuture = bookings.some(b => b.equipId === equipId && b.end >= now);
+  if (hasFuture) return;
+  const range = getDefaultFixedBookingRange();
+  await fbFns.addDoc(fbFns.collection(db, 'bookings'), {
+    user: '전용장비',
+    equipId,
+    spec: fixedCondition || '상시 가동',
+    start: range.start,
+    end: range.end,
+    memo: '전용장비 기본 예약',
+    createdAt: fbFns.serverTimestamp()
+  });
+}
+
+async function editFixedCondition(id) {
+  const eq = equipments.find(e => e.id === id);
+  if (!eq) return;
+  const next = prompt('고정조건을 입력하세요.', eq.fixedCondition || eq.mode || '');
+  if (next === null) return;
+  try {
+    await fbFns.updateDoc(fbFns.doc(db, 'equipments', id), {
+      fixedCondition: next.trim(),
+      mode: (eq.mode || '전용 장비')
+    });
+    const defaultBooking = bookings.find(b => b.equipId === id && b.user === '전용장비');
+    if (defaultBooking) {
+      await fbFns.updateDoc(fbFns.doc(db, 'bookings', defaultBooking.id), {
+        spec: next.trim() || '상시 가동'
+      });
+    }
+    showToast('고정조건이 수정되었습니다', 'success');
+  } catch(err) {
+    showToast('고정조건 수정에 실패했습니다', 'error');
+  }
+}
+
 
 function updateBadge() {
   const upcomingMine = bookings.filter(b => b.end >= today()).length;
@@ -1701,6 +1930,90 @@ function getStatsData() {
   };
 }
 
+
+let statsTrendChart = null;
+let statsUtilChart = null;
+
+function getMonthlyBookingTrend(monthCount = 6) {
+  const now = new Date();
+  const points = [];
+  for (let i = monthCount - 1; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const start = fmt(d);
+    const end = fmt(new Date(d.getFullYear(), d.getMonth() + 1, 0));
+    const label = `${d.getFullYear()%100}.${String(d.getMonth()+1).padStart(2,'0')}`;
+    const count = bookings.filter(b => b.start <= end && b.end >= start).length;
+    points.push({ label, count });
+  }
+  return points;
+}
+
+function renderStatsCharts(stats) {
+  if (typeof Chart === 'undefined') return;
+
+  const trendCanvas = document.getElementById('stats-booking-trend-chart');
+  const utilCanvas = document.getElementById('stats-util-chart');
+  if (!trendCanvas || !utilCanvas) return;
+
+  const trendData = getMonthlyBookingTrend(6);
+  const topUtil = stats.utilByEquip.slice(0, 8);
+
+  if (statsTrendChart) statsTrendChart.destroy();
+  if (statsUtilChart) statsUtilChart.destroy();
+
+  statsTrendChart = new Chart(trendCanvas.getContext('2d'), {
+    type: 'line',
+    data: {
+      labels: trendData.map(x => x.label),
+      datasets: [{
+        label: '예약 건수',
+        data: trendData.map(x => x.count),
+        tension: 0.3,
+        fill: true
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: { precision: 0 }
+        }
+      }
+    }
+  });
+
+  statsUtilChart = new Chart(utilCanvas.getContext('2d'), {
+    type: 'bar',
+    data: {
+      labels: topUtil.map(x => x.name.length > 16 ? x.name.slice(0, 16) + '…' : x.name),
+      datasets: [{
+        label: '가동률(%)',
+        data: topUtil.map(x => Number(x.utilization.toFixed(1)))
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false }
+      },
+      scales: {
+        x: {
+          beginAtZero: true,
+          max: 100
+        }
+      }
+    }
+  });
+}
+
+
 function renderStats() {
   const cards = document.getElementById('stats-summary-cards');
   const groupsEl = document.getElementById('stats-group-list');
@@ -1802,6 +2115,8 @@ function renderStats() {
       `).join('')}
     </tbody>
   `;
+
+  renderStatsCharts(stats);
 }
 
 // ═══════════════════════════════════════════════
@@ -1871,6 +2186,59 @@ function checkConflict() {
   }
 }
 
+
+function startBookingEdit(bookingId) {
+  const b = bookings.find(x => x.id === bookingId);
+  if (!b) {
+    showToast('예약 정보를 찾을 수 없습니다', 'error');
+    return;
+  }
+  editingBookingId = bookingId;
+  switchTab('book');
+  document.getElementById('f-user').value = members.includes(b.user) ? b.user : '직접입력';
+  onUserChange();
+  if (!members.includes(b.user)) {
+    document.getElementById('f-custom-user').value = b.user || '';
+  } else {
+    document.getElementById('f-custom-user').value = '';
+  }
+  document.getElementById('f-equip').value = b.equipId || '';
+  document.getElementById('f-spec').value = b.spec || '';
+  document.getElementById('f-start').value = b.start || '';
+  document.getElementById('f-end').value = b.end || '';
+  document.getElementById('f-memo').value = b.memo || '';
+  const sb = document.getElementById('submit-btn');
+  const cb = document.getElementById('cancel-book-btn');
+  if (sb) sb.textContent = '예약 수정 저장';
+  if (cb) {
+    cb.textContent = '취소';
+    cb.style.display = 'block';
+  }
+  checkConflict();
+}
+
+function resetBookingForm() {
+  editingBookingId = null;
+  document.getElementById('f-user').value = '';
+  document.getElementById('f-custom-user').value = '';
+  document.getElementById('custom-user-group').style.display = 'none';
+  document.getElementById('f-equip').value = '';
+  document.getElementById('f-spec').value = '';
+  document.getElementById('f-start').value = '';
+  document.getElementById('f-end').value = '';
+  document.getElementById('f-memo').value = '';
+  const sb = document.getElementById('submit-btn');
+  const cb = document.getElementById('cancel-book-btn');
+  if (sb) sb.textContent = '예약 등록';
+  if (cb) cb.style.display = 'none';
+  document.getElementById('conflict-warning').style.display = 'none';
+}
+
+function cancelBookingForm() {
+  resetBookingForm();
+  switchTab('timeline');
+}
+
 async function submitBooking() {
   const userSel = document.getElementById('f-user').value;
   const user    = userSel === '직접입력'
@@ -1885,14 +2253,13 @@ async function submitBooking() {
   if (!user || !equipId || !start || !end) { showToast('필수 항목을 모두 입력해주세요', 'error'); return; }
   if (end < start) { showToast('종료일이 시작일보다 이른 날짜입니다', 'error'); return; }
 
-  // ── 날짜 중복 체크 ──
   const conflicts = bookings.filter(b =>
     b.equipId === equipId &&
+    b.id !== editingBookingId &&
     b.start <= end &&
     b.end >= start
   );
   if (conflicts.length > 0) {
-    const eq = equipments.find(e => e.id === equipId);
     const names = [...new Set(conflicts.map(b => b.user))].join(', ');
     const dates = conflicts.map(b => `${b.start}~${b.end}`).join(', ');
     showToast('[X] 예약 불가 - ' + names + ' 사용 중 (' + dates + ')', 'error');
@@ -1900,25 +2267,34 @@ async function submitBooking() {
   }
 
   const btn = document.getElementById('submit-btn');
+  const baseLabel = editingBookingId ? '예약 수정 저장' : '예약 등록';
   btn.disabled = true;
-  btn.textContent = '등록 중...';
+  btn.textContent = editingBookingId ? '수정 중...' : '등록 중...';
 
   try {
-    await fbFns.addDoc(fbFns.collection(db, 'bookings'), {
-      user, equipId, spec, start, end, memo,
-      createdAt: fbFns.serverTimestamp()
-    });
-    showToast('예약이 등록되었습니다!', 'success');
-    document.getElementById('f-spec').value = '';
-    document.getElementById('f-memo').value = '';
-    document.getElementById('conflict-warning').style.display = 'none';
-    switchTab('mine');
+    if (editingBookingId) {
+      await fbFns.updateDoc(fbFns.doc(db, 'bookings', editingBookingId), {
+        user, equipId, spec, start, end, memo
+      });
+      showToast('예약이 수정되었습니다!', 'success');
+      resetBookingForm();
+      switchTab('timeline');
+    } else {
+      await fbFns.addDoc(fbFns.collection(db, 'bookings'), {
+        user, equipId, spec, start, end, memo,
+        createdAt: fbFns.serverTimestamp()
+      });
+      showToast('예약이 등록되었습니다!', 'success');
+      resetBookingForm();
+      switchTab('mine');
+    }
   } catch(err) {
     console.error(err);
-    showToast('등록에 실패했습니다. 연결을 확인해주세요', 'error');
+    showToast(editingBookingId ? '수정에 실패했습니다. 연결을 확인해주세요' : '등록에 실패했습니다. 연결을 확인해주세요', 'error');
   } finally {
     btn.disabled = false;
-    btn.textContent = '예약 등록';
+    btn.textContent = baseLabel;
+    checkConflict();
   }
 }
 
@@ -1938,17 +2314,31 @@ async function addEquipment() {
   const size   = document.getElementById('m-size').value.trim();
   const mode   = document.getElementById('m-mode').value.trim();
   const status = document.querySelector('input[name="m-status"]:checked').value;
+  const fixedCondition = document.getElementById('m-fixed-condition')?.value.trim() || '';
 
   if (!name) { showToast('장비명을 입력해주세요', 'error'); return; }
+  if (status === 'fixed' && !fixedCondition) { showToast('전용장비는 고정조건을 입력해주세요', 'error'); return; }
 
   try {
-    await fbFns.addDoc(fbFns.collection(db, 'equipments'), {
+    const docRef = await fbFns.addDoc(fbFns.collection(db, 'equipments'), {
       name, code, size, mode, status,
+      fixedCondition: status === 'fixed' ? fixedCondition : '',
       createdAt: fbFns.serverTimestamp()
     });
+
+    if (status === 'fixed') {
+      await ensureFixedDefaultBooking(docRef.id, fixedCondition);
+    }
+
     showToast(`"${name}" 추가 완료!`, 'success');
-    ['m-name','m-code','m-size','m-mode'].forEach(id => document.getElementById(id).value='');
+    ['m-name','m-code','m-size','m-mode','m-fixed-condition'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.value='';
+    });
+    document.getElementById('rs-available').checked = true;
+    toggleFixedConditionInput();
   } catch(err) {
+    console.error(err);
     showToast('추가에 실패했습니다', 'error');
   }
 }
@@ -1965,10 +2355,25 @@ function toggleStatus(id) {
 async function applyStatus(id, next) {
   const cur = document.getElementById('status-sel-' + id);
   if (cur) cur.style.display = 'none';
+  const eq = equipments.find(e => e.id === id);
+  if (!eq) return;
+
+  let payload = { status: next };
+
+  if (next === 'fixed') {
+    const nextCond = prompt('전용장비 고정조건을 입력하세요.', eq.fixedCondition || eq.mode || '');
+    if (nextCond === null) return;
+    payload.fixedCondition = nextCond.trim();
+  }
+
   try {
-    await fbFns.updateDoc(fbFns.doc(db, 'equipments', id), { status: next });
+    await fbFns.updateDoc(fbFns.doc(db, 'equipments', id), payload);
+    if (next === 'fixed') {
+      await ensureFixedDefaultBooking(id, payload.fixedCondition);
+    }
     showToast('상태가 변경되었습니다', 'success');
   } catch(err) {
+    console.error(err);
     showToast('변경에 실패했습니다', 'error');
   }
 }
@@ -1999,6 +2404,7 @@ function openEquipModal(id) {
     <div style="margin-bottom:12px">
       <span class="badge ${STATUS_BADGE[effSt]||'badge-gray'}">${STATUS_LABELS[effSt]||'—'}</span>
       ${eq.mode ? `<span style="font-size:11px;color:var(--text3);margin-left:8px">${eq.mode}</span>` : ''}
+      ${eq.fixedCondition ? `<div class="fixed-cond-box" style="margin-top:8px">고정조건: ${eq.fixedCondition}</div>` : ''}
     </div>
     <div class="section-label">예정 예약 (${myBooks.length}건)</div>
     ${!myBooks.length
@@ -2019,7 +2425,16 @@ function openEquipModal(id) {
 }
 
 function goBookEquip(id) {
+  resetBookingForm();
   document.getElementById('f-equip').value = id;
+  document.getElementById('f-start').value = today();
+  document.getElementById('f-end').value = today();
+  const cb = document.getElementById('cancel-book-btn');
+  if (cb) {
+    cb.textContent = '취소';
+    cb.style.display = 'block';
+  }
+  checkConflict();
   switchTab('book');
 }
 

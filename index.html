@@ -594,11 +594,11 @@ html, body {
   </div>
 
   <!-- 시험실 필터 탭 - content 밖에 배치해야 폰에서도 고정됨 -->
-  <div id="grp-filter-bar" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;padding:8px 12px;padding-left:max(12px,env(safe-area-inset-left));padding-right:max(12px,env(safe-area-inset-right));border-bottom:1px solid var(--border);background:var(--bg);flex-shrink:0">
-    <button class="grp-btn active" onclick="setGroup('all',this)" style="width:100%;padding:6px 10px;border-radius:20px;border:1px solid var(--border2);background:var(--accent);color:#ffffff;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:var(--font);text-align:center">전체</button>
-    <button class="grp-btn" onclick="setGroup('내후환경시험실',this)" style="width:100%;padding:6px 10px;border-radius:20px;border:1px solid var(--border2);background:none;color:var(--text2);font-size:12px;cursor:pointer;white-space:nowrap;font-family:var(--font);text-align:center">내후환경시험실</button>
-    <button class="grp-btn" onclick="setGroup('내환경시험실',this)" style="width:100%;padding:6px 10px;border-radius:20px;border:1px solid var(--border2);background:none;color:var(--text2);font-size:12px;cursor:pointer;white-space:nowrap;font-family:var(--font);text-align:center">내환경시험실</button>
-    <button class="grp-btn" onclick="setGroup('염수분무시험실',this)" style="width:100%;padding:6px 10px;border-radius:20px;border:1px solid var(--border2);background:none;color:var(--text2);font-size:12px;cursor:pointer;white-space:nowrap;font-family:var(--font);text-align:center">염수분무시험실</button>
+  <div id="grp-filter-bar" style="display:flex;gap:6px;padding:8px 12px;padding-left:max(12px,env(safe-area-inset-left));padding-right:max(12px,env(safe-area-inset-right));overflow-x:auto;border-bottom:1px solid var(--border);background:var(--bg);flex-shrink:0;scrollbar-width:none;-webkit-overflow-scrolling:touch">
+    <button class="grp-btn active" onclick="setGroup('all',this)" style="flex-shrink:0;padding:6px 14px;border-radius:20px;border:1px solid var(--border2);background:var(--accent);color:#ffffff;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:var(--font)">전체</button>
+    <button class="grp-btn" onclick="setGroup('내후환경시험실',this)" style="flex-shrink:0;padding:6px 14px;border-radius:20px;border:1px solid var(--border2);background:none;color:var(--text2);font-size:12px;cursor:pointer;white-space:nowrap;font-family:var(--font)">내후환경시험실</button>
+    <button class="grp-btn" onclick="setGroup('내환경시험실',this)" style="flex-shrink:0;padding:6px 14px;border-radius:20px;border:1px solid var(--border2);background:none;color:var(--text2);font-size:12px;cursor:pointer;white-space:nowrap;font-family:var(--font)">내환경시험실</button>
+    <button class="grp-btn" onclick="setGroup('염수분무시험실',this)" style="flex-shrink:0;padding:6px 14px;border-radius:20px;border:1px solid var(--border2);background:none;color:var(--text2);font-size:12px;cursor:pointer;white-space:nowrap;font-family:var(--font)">염수분무시험실</button>
   </div>
 
   <div class="content">
@@ -1441,7 +1441,7 @@ function switchTab(t) {
   // 장비현황/현황표 탭일 때 시험실 필터 표시
   const fb = document.getElementById('grp-filter-bar');
   if (fb) {
-    fb.style.display = (t === 'list' || t === 'timeline') ? 'grid' : 'none';
+    fb.style.display = (t === 'list' || t === 'timeline') ? 'flex' : 'none';
     if (t === 'list' || t === 'timeline') resetGroupFilterScroll();
   }
   renderAll();

@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>장비 스케줄러 — FITI 의장소재팀</title>
 <meta name="description" content="FITI 의장소재팀 장비 사용 일정 관리">
-<meta name="theme-color" content="#0e1117">
+<meta name="theme-color" content="#ffffff">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -47,31 +47,31 @@
 
 <style>
 :root {
-  --bg: #0e1117;
-  --bg2: #161b25;
-  --bg3: #1e2533;
-  --bg4: #252d3d;
-  --border: rgba(255,255,255,0.07);
-  --border2: rgba(255,255,255,0.13);
-  --text: #e8ecf4;
-  --text2: #8a95a8;
-  --text3: #4a5568;
-  --accent: #3ecf8e;
-  --accent2: #2bb87a;
-  --accent-dim: rgba(62,207,142,0.12);
-  --accent-dim2: rgba(62,207,142,0.06);
-  --blue: #5b8dee;
-  --blue-dim: rgba(91,141,238,0.15);
-  --amber: #f5a623;
-  --amber-dim: rgba(245,166,35,0.15);
-  --red: #e05252;
-  --red-dim: rgba(224,82,82,0.13);
-  --purple: #a78bfa;
-  --purple-dim: rgba(167,139,250,0.13);
-  --coral: #f07167;
-  --coral-dim: rgba(240,113,103,0.13);
-  --radius: 10px;
-  --radius-lg: 14px;
+  --bg: #f8f9fc;
+  --bg2: #ffffff;
+  --bg3: #f0f2f7;
+  --bg4: #e8ebf2;
+  --border: rgba(30,40,80,0.08);
+  --border2: rgba(30,40,80,0.14);
+  --text: #1a2035;
+  --text2: #5a6484;
+  --text3: #9aa3be;
+  --accent: #2563eb;
+  --accent2: #1d55d4;
+  --accent-dim: rgba(37,99,235,0.10);
+  --accent-dim2: rgba(37,99,235,0.05);
+  --blue: #2563eb;
+  --blue-dim: rgba(37,99,235,0.10);
+  --amber: #d97706;
+  --amber-dim: rgba(217,119,6,0.10);
+  --red: #dc2626;
+  --red-dim: rgba(220,38,38,0.10);
+  --purple: #7c3aed;
+  --purple-dim: rgba(124,58,237,0.10);
+  --coral: #e05252;
+  --coral-dim: rgba(224,82,82,0.10);
+  --radius: 8px;
+  --radius-lg: 12px;
   --font: 'Noto Sans KR', sans-serif;
   --mono: 'JetBrains Mono', monospace;
 }
@@ -101,8 +101,8 @@ html, body {
 
 /* ── 헤더 ── */
 .header {
-  padding: 14px 16px 12px;
-  background: var(--bg);
+  padding: 13px 16px 12px;
+  background: var(--bg2);
   border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
@@ -110,6 +110,7 @@ html, body {
   flex-shrink: 0;
   position: relative;
   z-index: 50;
+  box-shadow: 0 1px 3px rgba(30,40,80,0.06);
 }
 .header-left { display: flex; align-items: center; gap: 10px; }
 .logo {
@@ -123,7 +124,7 @@ html, body {
 .header-sub { font-size: 11px; color: var(--text2); }
 .header-badge {
   display: flex; align-items: center; gap: 5px;
-  background: var(--accent-dim); border: 1px solid rgba(62,207,142,0.25);
+  background: var(--accent-dim); border: 1px solid rgba(37,99,235,0.2);
   border-radius: 20px; padding: 4px 10px; cursor: pointer;
 }
 .header-badge .dot {
@@ -136,24 +137,25 @@ html, body {
 /* ── 탭 네비게이션 ── */
 .nav {
   display: flex;
-  background: var(--bg);
+  background: var(--bg2);
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
-  padding: 0 4px;
+  padding: 0 2px;
+  box-shadow: 0 1px 0 var(--border);
 }
 .nav-btn {
-  flex: 1; padding: 10px 4px;
+  flex: 1; padding: 11px 2px;
   border: none; background: none; cursor: pointer;
   color: var(--text3); font-size: 11px; font-family: var(--font);
-  display: flex; flex-direction: column; align-items: center; gap: 3px;
-  transition: color .2s; position: relative;
+  font-weight: 500; letter-spacing: 0.2px;
+  transition: color .15s; position: relative;
 }
-.nav-btn .nav-icon { font-size: 18px; }
-.nav-btn.active { color: var(--accent); }
+.nav-btn.active { color: var(--accent); font-weight: 700; }
 .nav-btn.active::after {
-  content: ''; position: absolute; bottom: 0; left: 20%; right: 20%;
+  content: ''; position: absolute; bottom: 0; left: 15%; right: 15%;
   height: 2px; background: var(--accent); border-radius: 2px 2px 0 0;
 }
+.nav-btn:hover:not(.active) { color: var(--text2); background: var(--bg3); }
 
 /* ── 콘텐츠 ── */
 .content { flex: 1; overflow-y: auto; overflow-x: hidden; }
@@ -175,6 +177,7 @@ html, body {
 .card {
   background: var(--bg2); border: 1px solid var(--border);
   border-radius: var(--radius-lg); overflow: hidden;
+  box-shadow: 0 1px 4px rgba(30,40,80,0.06);
 }
 .badge {
   display: inline-flex; align-items: center;
@@ -182,11 +185,11 @@ html, body {
   border-radius: 20px; letter-spacing: .3px;
 }
 .badge-green { background: rgba(62,207,142,0.15); color: #3ecf8e; }
-.badge-blue { background: var(--blue-dim); color: var(--blue); }
-.badge-amber { background: var(--amber-dim); color: var(--amber); }
-.badge-red { background: var(--red-dim); color: var(--red); }
-.badge-gray { background: rgba(255,255,255,0.07); color: var(--text2); }
-.badge-purple { background: var(--purple-dim); color: var(--purple); }
+.badge-blue { background: #dbeafe; color: #1d4ed8; }
+.badge-amber { background: #fef3c7; color: #92400e; }
+.badge-red { background: #fee2e2; color: #991b1b; }
+.badge-gray { background: var(--bg3); color: var(--text2); }
+.badge-purple { background: #ede9fe; color: #5b21b6; }
 
 /* ── 장비 목록 ── */
 .equip-item {
@@ -197,8 +200,8 @@ html, body {
   position: relative;
 }
 .equip-item:last-child { border-bottom: none; }
-.equip-item:hover { background: rgba(255,255,255,0.02); }
-.equip-item:active { background: rgba(255,255,255,0.04); }
+.equip-item:hover { background: var(--bg3); }
+.equip-item:active { background: var(--bg4); }
 .equip-dot {
   width: 10px; height: 10px; border-radius: 50%;
   flex-shrink: 0; margin-top: 3px;
@@ -237,7 +240,7 @@ html, body {
 .cal-nav-btn {
   width: 30px; height: 30px;
   background: var(--bg3); border: 1px solid var(--border);
-  border-radius: 8px; cursor: pointer; color: var(--text2);
+  border-radius: 8px; cursor: pointer; color: var(--text2); font-weight:600;
   font-size: 14px; display: flex; align-items: center; justify-content: center;
   transition: all .15s;
 }
@@ -256,7 +259,7 @@ html, body {
 
 .cal-days-header {
   display: grid; grid-template-columns: repeat(7,1fr);
-  background: var(--bg2); border-bottom: 1px solid var(--border);
+  background: #f1f5f9; border-bottom: 1px solid var(--border);
 }
 .cal-dh {
   text-align: center; padding: 7px 0;
@@ -279,8 +282,8 @@ html, body {
 .cal-cell:nth-child(7n) { border-right: none; }
 .cal-cell:hover { background: rgba(255,255,255,0.025); }
 .cal-cell.other-month { opacity: .35; }
-.cal-cell.today { background: var(--accent-dim2); }
-.cal-cell.today .cal-day-num { color: var(--accent); font-weight: 700; }
+.cal-cell.today { background: #eff6ff; }
+.cal-cell.today .cal-day-num { color: #2563eb; font-weight: 700; }
 .cal-cell.has-event::before {
   content: ''; position: absolute; top: 3px; right: 3px;
   width: 5px; height: 5px; border-radius: 50%; background: var(--accent);
@@ -309,7 +312,7 @@ html, body {
   display: block; margin-bottom: 6px;
 }
 .form-control {
-  width: 100%; background: var(--bg2); border: 1px solid var(--border2);
+  width: 100%; background: #ffffff; border: 1px solid var(--border2);
   border-radius: var(--radius); color: var(--text); font-family: var(--font);
   font-size: 14px; padding: 10px 12px; outline: none;
   transition: border-color .15s;
@@ -319,18 +322,18 @@ html, body {
 .date-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .submit-btn {
   width: 100%; padding: 13px;
-  background: var(--accent); color: #0e1117;
+  background: var(--accent); color: #ffffff;
   border: none; border-radius: var(--radius);
   font-size: 14px; font-weight: 700; font-family: var(--font);
   cursor: pointer; transition: all .15s; margin-top: 4px;
 }
-.submit-btn:hover { background: var(--accent2); }
+.submit-btn:hover { background: #1d55d4; }
 .submit-btn:active { transform: scale(.98); }
 .submit-btn:disabled { opacity: .4; cursor: not-allowed; }
 
 /* ── 내 예약 ── */
 .my-item {
-  background: var(--bg2); border: 1px solid var(--border);
+  background: #ffffff; border: 1px solid var(--border);
   border-radius: var(--radius-lg); padding: 12px 14px;
   margin-bottom: 10px;
 }
@@ -363,7 +366,7 @@ html, body {
 .mgmt-item-meta { font-size: 11px; color: var(--text3); font-family: var(--mono); }
 .mgmt-actions { display: flex; gap: 6px; }
 .mgmt-btn {
-  background: var(--bg3); border: 1px solid var(--border2);
+  background: var(--bg3); border: 1px solid var(--border);
   border-radius: 7px; padding: 4px 9px; font-size: 11px;
   color: var(--text2); cursor: pointer; font-family: var(--font);
   transition: all .15s;
@@ -401,7 +404,7 @@ html, body {
 .modal-overlay.open { opacity: 1; pointer-events: all; }
 .modal {
   width: 100%; max-width: 430px; margin: 0 auto;
-  background: var(--bg2); border-radius: 18px 18px 0 0;
+  background: #ffffff; border-radius: 18px 18px 0 0;
   padding: 0 0 30px;
   transform: translateY(100%); transition: transform .3s cubic-bezier(.22,.68,0,1.2);
   max-height: 80dvh; display: flex; flex-direction: column;
@@ -437,7 +440,7 @@ html, body {
 .toast {
   position: fixed; bottom: 70px; left: 50%;
   transform: translateX(-50%) translateY(20px);
-  background: var(--bg3); border: 1px solid var(--border2);
+  background: #1a2035; border: 1px solid rgba(255,255,255,.1);
   border-radius: 20px; padding: 9px 18px;
   font-size: 13px; font-weight: 500; color: var(--text);
   opacity: 0; transition: all .3s; z-index: 300;
@@ -445,25 +448,25 @@ html, body {
   box-shadow: 0 4px 20px rgba(0,0,0,.4);
 }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-.toast.success { background: var(--accent-dim); border-color: rgba(62,207,142,.3); color: var(--accent); }
-.toast.error { background: var(--red-dim); border-color: rgba(224,82,82,.3); color: var(--red); }
+.toast.success { background: #dcfce7; border-color: rgba(22,163,74,.3); color: #166534; }
+.toast.error { background: #fee2e2; border-color: rgba(220,38,38,.3); color: #991b1b; }
 
 /* ── 로딩 ── */
 .loading-screen {
-  position: fixed; inset: 0; background: var(--bg);
+  position: fixed; inset: 0; background: #f8f9fc;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   z-index: 500; gap: 14px; transition: opacity .4s;
 }
 .loading-screen.gone { opacity: 0; pointer-events: none; }
 .loading-logo {
-  width: 60px; height: 60px; background: var(--accent);
+  width: 60px; height: 60px; background: #2563eb;
   border-radius: 16px; display: flex; align-items: center; justify-content: center;
-  font-size: 26px; font-weight: 700; color: #0e1117;
+  font-size: 26px; font-weight: 700; color: #ffffff;
 }
-.loading-text { font-size: 14px; color: var(--text2); }
+.loading-text { font-size: 14px; color: #5a6484; }
 .spinner {
-  width: 20px; height: 20px; border: 2px solid var(--border2);
-  border-top-color: var(--accent); border-radius: 50%;
+  width: 20px; height: 20px; border: 2px solid #e2e8f0;
+  border-top-color: #2563eb; border-radius: 50%;
   animation: spin .7s linear infinite;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
@@ -477,7 +480,7 @@ html, body {
 
 /* ── 오프라인 배너 ── */
 .offline-banner {
-  background: var(--amber-dim); border-bottom: 1px solid rgba(245,166,35,.3);
+  background: #fef3c7; border-bottom: 1px solid rgba(217,119,6,.3);
   padding: 7px 14px; font-size: 11px; color: var(--amber);
   text-align: center; display: none; font-weight: 500;
 }
@@ -492,7 +495,7 @@ html, body {
   position: sticky; top: 0; z-index: 5;
 }
 .conflict-warning {
-  background: var(--amber-dim); border: 1px solid rgba(245,166,35,.3);
+  background: #fef3c7; border: 1px solid rgba(217,119,6,.3);
   border-radius: var(--radius); padding: 8px 12px; margin-bottom: 12px;
   font-size: 12px; color: var(--amber);
 }
@@ -507,7 +510,7 @@ html, body {
 .tl-table { border-collapse: collapse; font-size: 11px; min-width: 100%; }
 .tl-equip-cell {
   position: sticky; left: 0; z-index: 3;
-  background: var(--bg2); border-right: 1px solid var(--border2);
+  background: #ffffff; border-right: 1px solid var(--border2);
   padding: 5px 8px; white-space: nowrap; min-width: 120px; max-width: 140px;
   border-bottom: 1px solid var(--border);
   font-size: 11px; color: var(--text);
@@ -518,7 +521,7 @@ html, body {
   font-size: 10px; font-weight: 700; color: var(--text3);
   border-bottom: 1px solid var(--border2);
   border-right: 0.5px solid var(--border);
-  background: var(--bg2);
+  background: #f1f5f9;
   position: sticky; top: 0; z-index: 2;
 }
 .tl-day-header.today-h { color: var(--accent); }
@@ -530,16 +533,16 @@ html, body {
   border-bottom: 0.5px solid var(--border);
   position: relative; vertical-align: middle;
 }
-.tl-cell.booked { background: rgba(62,207,142,.22); }
-.tl-cell.booked-blue { background: rgba(91,141,238,.22); }
-.tl-cell.booked-amber { background: rgba(245,166,35,.22); }
-.tl-cell.booked-purple { background: rgba(167,139,250,.22); }
-.tl-cell.booked-coral { background: rgba(240,113,103,.22); }
-.tl-cell.today-col { background: rgba(62,207,142,.05); }
-.tl-cell.booked.today-col { background: rgba(62,207,142,.32); }
+.tl-cell.booked { background: #bbf7d0; }
+.tl-cell.booked-blue { background: #bfdbfe; }
+.tl-cell.booked-amber { background: #fde68a; }
+.tl-cell.booked-purple { background: #ddd6fe; }
+.tl-cell.booked-coral { background: #fecaca; }
+.tl-cell.today-col { background: #eff6ff; }
+.tl-cell.booked.today-col { background: #86efac; }
 .tl-label {
   position: absolute; left: 3px; top: 50%; transform: translateY(-50%);
-  font-size: 9px; font-weight: 700; color: #0e1117;
+  font-size: 9px; font-weight: 700; color: #1a2035;
   white-space: nowrap; overflow: hidden;
   text-overflow: ellipsis; max-width: 140px;
   pointer-events: none;
@@ -580,29 +583,17 @@ html, body {
 
   <!-- 탭 -->
   <div class="nav">
-    <button class="nav-btn active" data-tab="list" onclick="switchTab('list')">
-      <span class="nav-icon">&#x1F5A5;</span>장비현황
-    </button>
-    <button class="nav-btn" data-tab="cal" onclick="switchTab('cal')">
-      <span class="nav-icon">&#x1F4C5;</span>달력
-    </button>
-    <button class="nav-btn" data-tab="book" onclick="switchTab('book')">
-      <span class="nav-icon">&#x2795;</span>예약하기
-    </button>
-    <button class="nav-btn" data-tab="mine" onclick="switchTab('mine')">
-      <span class="nav-icon">&#x1F464;</span>내 예약
-    </button>
-    <button class="nav-btn" data-tab="timeline" onclick="switchTab('timeline')">
-      <span class="nav-icon">&#x1F4CA;</span>현황표
-    </button>
-    <button class="nav-btn" data-tab="mgmt" onclick="switchTab('mgmt')">
-      <span class="nav-icon">&#x2699;</span>장비관리
-    </button>
+    <button class="nav-btn active" data-tab="list" onclick="switchTab('list')">장비현황</button>
+    <button class="nav-btn" data-tab="cal" onclick="switchTab('cal')">달력</button>
+    <button class="nav-btn" data-tab="book" onclick="switchTab('book')">예약</button>
+    <button class="nav-btn" data-tab="mine" onclick="switchTab('mine')">내 예약</button>
+    <button class="nav-btn" data-tab="timeline" onclick="switchTab('timeline')">현황표</button>
+    <button class="nav-btn" data-tab="mgmt" onclick="switchTab('mgmt')">장비관리</button>
   </div>
 
   <!-- 시험실 필터 탭 - content 밖에 배치해야 폰에서도 고정됨 -->
   <div id="grp-filter-bar" style="display:flex;gap:6px;padding:8px 12px;overflow-x:auto;border-bottom:1px solid var(--border);background:var(--bg);flex-shrink:0;scrollbar-width:none;-webkit-overflow-scrolling:touch">
-    <button class="grp-btn active" onclick="setGroup('all',this)" style="flex-shrink:0;padding:6px 14px;border-radius:20px;border:1px solid var(--border2);background:var(--accent);color:#0e1117;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:var(--font)">전체</button>
+    <button class="grp-btn active" onclick="setGroup('all',this)" style="flex-shrink:0;padding:6px 14px;border-radius:20px;border:1px solid var(--border2);background:var(--accent);color:#ffffff;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;font-family:var(--font)">전체</button>
     <button class="grp-btn" onclick="setGroup('내후환경시험실',this)" style="flex-shrink:0;padding:6px 14px;border-radius:20px;border:1px solid var(--border2);background:none;color:var(--text2);font-size:12px;cursor:pointer;white-space:nowrap;font-family:var(--font)">내후환경시험실</button>
     <button class="grp-btn" onclick="setGroup('내환경시험실',this)" style="flex-shrink:0;padding:6px 14px;border-radius:20px;border:1px solid var(--border2);background:none;color:var(--text2);font-size:12px;cursor:pointer;white-space:nowrap;font-family:var(--font)">내환경시험실</button>
     <button class="grp-btn" onclick="setGroup('염수분무시험실',this)" style="flex-shrink:0;padding:6px 14px;border-radius:20px;border:1px solid var(--border2);background:none;color:var(--text2);font-size:12px;cursor:pointer;white-space:nowrap;font-family:var(--font)">염수분무시험실</button>
@@ -795,7 +786,7 @@ function setGroup(g, btn) {
     b.style.borderColor = 'var(--border2)';
   });
   btn.style.background = 'var(--accent)';
-  btn.style.color = '#0e1117';
+  btn.style.color = '#ffffff';
   btn.style.borderColor = 'var(--accent)';
   renderEquipList();
 }
@@ -833,8 +824,8 @@ const COLOR_STYLES = {
 };
 
 const DOT_COLORS = {
-  available: '#3ecf8e', inuse: '#5b8dee',
-  fixed: '#f5a623', broken: '#e05252'
+  available: '#16a34a', inuse: '#2563eb',
+  fixed: '#d97706', broken: '#dc2626'
 };
 
 const STATUS_LABELS = {
@@ -1489,10 +1480,8 @@ function closeModalDirect() {
 }
 
 // 날짜 기본값
-const td = new Date();
-document.getElementById('f-start').value = fmt(td);
-const te = new Date(td); te.setDate(te.getDate()+5);
-document.getElementById('f-end').value = fmt(te);
+document.getElementById('f-start').value = today();
+document.getElementById('f-end').value = today();
 </script>
 <script>
 if ('serviceWorker' in navigator) {

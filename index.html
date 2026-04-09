@@ -1937,16 +1937,19 @@ function renderTimeline() {
   const todayIdx = days.findIndex(d => d.date===todayStr);
   if (sc) {
     const restoreLeft = timelineScrollRestore;
-    setTimeout(() => {
+    const doScroll = (attempt) => {
+      const w = sc.clientWidth;
+      if (w === 0 && attempt < 10) { setTimeout(() => doScroll(attempt + 1), 80); return; }
       const target = restoreLeft !== null
         ? restoreLeft
-        : todayIdx > 0 ? Math.max(0, EQUIP_W + todayIdx * (HALF_W * 2) - sc.clientWidth / 2) : null;
+        : todayIdx > 0 ? Math.max(0, EQUIP_W + todayIdx * (HALF_W * 2) - w / 2) : null;
       if (target !== null) {
         sc.scrollLeft = target;
         if (hdrScroll) hdrScroll.scrollLeft = target;
       }
       timelineScrollRestore = null;
-    }, 30);
+    };
+    setTimeout(() => doScroll(0), 30);
   }
 }
 

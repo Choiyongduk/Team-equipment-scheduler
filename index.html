@@ -587,8 +587,9 @@ html, body {
   font-weight: 700;
   color: #1a2035;
   white-space: nowrap;
-  z-index: 2;
+  z-index: 3;
   pointer-events: none;
+  overflow: visible;
 }
 .tl-label.mid {
   top: 50%;
@@ -1049,7 +1050,7 @@ html, body {
       </div>
     </div>
     <!-- 가로+세로 스크롤 컨테이너 -->
-    <div id="timeline-scroll" style="overflow:auto;-webkit-overflow-scrolling:touch;flex:1;min-height:0;padding-bottom:40px">
+    <div id="timeline-scroll" style="overflow:auto;-webkit-overflow-scrolling:touch;flex:1;min-height:0;padding-bottom:40px;touch-action:pan-x pan-y">
       <div id="timeline-table"></div>
     </div>
   </div>
@@ -1641,8 +1642,12 @@ function renderTimeline() {
       if (amBook) {
         const cls = getUserBookingClass(amBook.user);
         const isFirstAm = amBook.start === d.date && (amBook.startPeriod || '') !== 'pm';
-        const lbl = isFirstAm
-          ? '<span class="tl-label mid" style="font-size:8px">' + (amBook.user.split('_').pop() || amBook.user) + '</span>' : '';
+        let lbl = '';
+        if (isFirstAm) {
+          const nameStr = amBook.user.split('_').pop() || amBook.user;
+          const specStr = amBook.spec ? ' ' + amBook.spec : '';
+          lbl = '<span class="tl-label mid" style="font-size:8px;font-weight:700;white-space:nowrap;overflow:hidden;max-width:200px;display:block">' + nameStr + specStr + '</span>';
+        }
         cells.push('<td class="tl-cell am-cell ' + cls + tc + ' tl-book-cell" data-eid="' + eq.id + '" data-date="' + d.date + '" data-ampm="am">' + lbl + '</td>');
       } else if (effSt === 'fixed') {
         cells.push('<td class="tl-cell am-cell' + tc + '" style="background:' + (d.date === todayStr ? '#eef5ff' : '#fef9ef') + '"></td>');
@@ -1654,8 +1659,12 @@ function renderTimeline() {
       if (pmBook) {
         const cls = getUserBookingClass(pmBook.user);
         const isFirstPm = pmBook.start === d.date && (pmBook.startPeriod || '') === 'pm';
-        const lbl = isFirstPm
-          ? '<span class="tl-label mid" style="font-size:8px">' + (pmBook.user.split('_').pop() || pmBook.user) + '</span>' : '';
+        let lbl = '';
+        if (isFirstPm) {
+          const nameStr = pmBook.user.split('_').pop() || pmBook.user;
+          const specStr = pmBook.spec ? ' ' + pmBook.spec : '';
+          lbl = '<span class="tl-label mid" style="font-size:8px;font-weight:700;white-space:nowrap;overflow:hidden;max-width:200px;display:block">' + nameStr + specStr + '</span>';
+        }
         cells.push('<td class="tl-cell pm-cell ' + cls + tc + ' tl-book-cell" data-eid="' + eq.id + '" data-date="' + d.date + '" data-ampm="pm">' + lbl + '</td>');
       } else if (effSt === 'fixed') {
         cells.push('<td class="tl-cell pm-cell' + tc + '" style="background:' + (d.date === todayStr ? '#eef5ff' : '#fef9ef') + '"></td>');
@@ -1725,6 +1734,42 @@ function toggleTlGroup(group) {
         }
       }
     });
+
+    // ── 터치 방향 잠금: 처음 움직인 방향(가로/세로)으로만 스크롤 ──
+    (function() {
+      const sc = document.getElementById('timeline-scroll');
+      if (!sc) return;
+      let startX = 0, startY = 0, lockDir = null;
+
+      sc.addEventListener('touchstart', function(e) {
+        startX  = e.touches[0].clientX;
+        startY  = e.touches[0].clientY;
+        lockDir = null;
+      }, { passive: true });
+
+      sc.addEventListener('touchmove', function(e) {
+        const dx = Math.abs(e.touches[0].clientX - startX);
+        const dy = Math.abs(e.touches[0].clientY - startY);
+
+        if (!lockDir) {
+          if (dx > 5 || dy > 5) {
+            lockDir = dx > dy ? 'x' : 'y';
+          } else {
+            return;
+          }
+        }
+
+        if (lockDir === 'x') {
+          // 가로 스크롤 중 → 세로 스크롤 차단
+          e.preventDefault();
+        }
+        // 세로 스크롤 중(lockDir==='y')이면 기본 동작 허용 (preventDefault 안 함)
+      }, { passive: false });
+
+      sc.addEventListener('touchend', function() {
+        lockDir = null;
+      }, { passive: true });
+    })();
   };
 })();
 

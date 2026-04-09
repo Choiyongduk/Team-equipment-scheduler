@@ -520,33 +520,48 @@ html, body {
 }
 
 /* ── 타임라인 테이블 ── */
-.tl-table { border-collapse: collapse; font-size: 11px; min-width: 100%; }
+.tl-table { border-collapse: collapse; font-size: 11px; table-layout: fixed; }
 .tl-equip-cell {
   position: sticky; left: 0; z-index: 100;
   background: #ffffff; border-right: 1px solid var(--border2);
-  padding: 5px 8px; white-space: nowrap; min-width: 120px; max-width: 140px;
+  padding: 5px 8px; white-space: nowrap;
+  width: 200px; min-width: 200px; max-width: 200px;
   border-bottom: 1px solid var(--border);
   font-size: 11px; color: var(--text);
+  overflow: visible;
 }
 .tl-equip-cell .tl-group { font-size: 9px; color: var(--text3); }
+/* 날짜 상단 헤더 (colspan=2) */
 .tl-day-header {
-  text-align: center; padding: 4px 0; min-width: 28px;
-  font-size: 10px; font-weight: 700; color: var(--text3);
+  text-align: center; padding: 4px 0 3px; min-width: 56px;
+  font-size: 11px; font-weight: 700; color: var(--text3);
   border-bottom: 1px solid var(--border2);
-  border-right: 0.5px solid var(--border);
+  border-right: 1px solid var(--border2);
   background: #f1f5f9;
-  position: sticky; top: 0; z-index: 2;
 }
-.tl-day-header.today-h { color: var(--accent); }
+.tl-day-header.today-h { color: var(--accent); background: #eff6ff; }
 .tl-day-header.sat-h { color: var(--blue); }
 .tl-day-header.sun-h { color: var(--red); }
+/* 오전/오후 서브 헤더 */
+.tl-ampm-header {
+  text-align: center; padding: 3px 0;
+  font-size: 10px; font-weight: 600; color: var(--text3);
+  border-bottom: 1px solid var(--border2);
+  border-right: 0.5px solid var(--border);
+  background: #f8fafc;
+  min-width: 28px; letter-spacing: 0; white-space: nowrap;
+}
+.tl-ampm-header.am { border-right: 0.5px solid var(--border); }
+.tl-ampm-header.pm { border-right: 1px solid var(--border2); }
+.tl-ampm-header.today-sub { background: #eff6ff; }
 .tl-cell {
   min-width: 28px; height: 30px;
-  border-right: 0.5px solid var(--border);
+  border-right: 0.5px solid rgba(30,40,80,0.08);
   border-bottom: 0.5px solid var(--border);
   position: relative; vertical-align: middle;
   overflow: visible;
 }
+.tl-cell.pm-cell { border-right: 1px solid var(--border2); }
 .tl-cell.booked { background: #bbf7d0; }
 .tl-cell.booked-blue { background: #bfdbfe; }
 .tl-cell.booked-amber { background: #fde68a; }
@@ -559,47 +574,59 @@ html, body {
 .tl-cell.booked-purple.today-col { background: #c4b5fd; }
 .tl-cell.booked-coral.today-col { background: #fca5a5; }
 .tl-label {
-  position: absolute;
-  left: 3px;
-  font-size: 9px;
-  font-weight: 700;
-  color: #1a2035;
-  white-space: nowrap;
-  z-index: 2;
-  pointer-events: none;
+  position: absolute; left: 3px;
+  font-size: 9px; font-weight: 700; color: #1a2035;
+  white-space: nowrap; z-index: 2; pointer-events: none;
 }
-.tl-label.mid {
-  top: 50%;
-  transform: translateY(-50%);
-}
-.tl-label.top {
-  top: 4px;
-}
-.tl-label.bottom {
-  bottom: 4px;
-}
-.tl-fixed-badge {
-  font-size: 9px; color: var(--text3); font-style: italic;
-  padding: 0 3px;
-}
+.tl-label.mid { top: 50%; transform: translateY(-50%); }
+.tl-label.top { top: 4px; }
+.tl-label.bottom { bottom: 4px; }
+.tl-fixed-badge { font-size: 9px; color: var(--text3); font-style: italic; padding: 0 3px; }
 
 /* === FIX: group sticky === */
 .tl-group-sticky {
-  position: sticky;
-  left: 0;
-  z-index: 4;
-  min-width: 130px;
-  background: #eff6ff;
-  padding: 6px 12px;
-  font-size: 11px;
-  font-weight: 700;
-  color: #1d4ed8;
-  border-right: 1px solid #bfdbfe;
-  border-bottom: 1px solid #bfdbfe;
-  user-select: none;
-  cursor: pointer;
-  white-space: nowrap;
+  position: sticky; left: 0; z-index: 4;
+  width: 200px; min-width: 200px;
+  background: #eff6ff; padding: 6px 12px;
+  font-size: 11px; font-weight: 700; color: #1d4ed8;
+  border-right: 1px solid #bfdbfe; border-bottom: 1px solid #bfdbfe;
+  user-select: none; cursor: pointer; white-space: nowrap;
 }
+
+/* ── 월별 예약 로그 ── */
+.log-toolbar {
+  display:flex; gap:8px; align-items:center; flex-wrap:wrap;
+  padding:12px 14px; border-bottom:1px solid var(--border); background:var(--bg2);
+}
+.log-toolbar select {
+  background:#fff; border:1px solid var(--border2); border-radius:8px;
+  color:var(--text); font-family:var(--font); font-size:12px; padding:7px 10px; outline:none;
+}
+.log-dl-btn {
+  display:flex; align-items:center; gap:5px;
+  background:var(--accent); color:#fff; border:none; border-radius:8px;
+  padding:7px 14px; font-size:12px; font-weight:700; font-family:var(--font);
+  cursor:pointer; transition:background .15s; white-space:nowrap;
+}
+.log-dl-btn:hover { background:var(--accent2); }
+.log-summary-row {
+  display:flex; gap:12px; padding:10px 14px;
+  background:var(--bg3); border-bottom:1px solid var(--border);
+  font-size:12px; color:var(--text2); flex-wrap:wrap;
+}
+.log-summary-row strong { color:var(--text); }
+.log-table-wrap { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+.log-table { width:100%; border-collapse:collapse; min-width:640px; }
+.log-table th {
+  text-align:left; font-size:11px; color:var(--text3); font-weight:700;
+  padding:9px 12px; background:#f8fafc; border-bottom:1px solid var(--border);
+  position:sticky; top:0; z-index:1; white-space:nowrap;
+}
+.log-table td { padding:9px 12px; border-bottom:1px solid var(--border); font-size:12px; color:var(--text); vertical-align:middle; }
+.log-table tr:last-child td { border-bottom:none; }
+.log-table tr:hover td { background:#fafcff; }
+.log-empty { text-align:center; color:var(--text3); padding:24px 0; font-size:13px; }
+.log-days-badge { display:inline-block; background:var(--accent-dim); color:var(--accent); border-radius:10px; padding:2px 8px; font-size:10px; font-weight:700; }
 
 
 /* === responsive + stats === */
@@ -713,6 +740,7 @@ html, body {
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 </head>
 <body>
 
@@ -751,6 +779,7 @@ html, body {
     <button class="nav-btn" data-tab="stats" onclick="switchTab('stats')">통계</button>
     <button class="nav-btn" data-tab="cal" onclick="switchTab('cal')">달력</button>
     <button class="nav-btn" data-tab="mgmt" onclick="switchTab('mgmt')">장비관리</button>
+    <button class="nav-btn" data-tab="log" onclick="switchTab('log')">예약로그</button>
   </div>
 
   <!-- 시험실 필터 탭 - content 밖에 배치해야 폰에서도 고정됨 -->
@@ -759,6 +788,25 @@ html, body {
     <button class="grp-btn" onclick="setGroup('내후환경시험실',this)" style="flex-shrink:0;padding:6px 14px;border-radius:20px;border:1px solid var(--border2);background:none;color:var(--text2);font-size:12px;cursor:pointer;white-space:nowrap;font-family:var(--font)">내후환경시험실</button>
     <button class="grp-btn" onclick="setGroup('내환경시험실',this)" style="flex-shrink:0;padding:6px 14px;border-radius:20px;border:1px solid var(--border2);background:none;color:var(--text2);font-size:12px;cursor:pointer;white-space:nowrap;font-family:var(--font)">내환경시험실</button>
     <button class="grp-btn" onclick="setGroup('염수분무시험실',this)" style="flex-shrink:0;padding:6px 14px;border-radius:20px;border:1px solid var(--border2);background:none;color:var(--text2);font-size:12px;cursor:pointer;white-space:nowrap;font-family:var(--font)">염수분무시험실</button>
+  </div>
+
+  <!-- 현황표 고정 헤더 (.content 밖 → 세로스크롤과 완전 독립) -->
+  <div id="tl-fixed-header" style="display:none;flex-direction:column;flex-shrink:0;background:var(--bg2);border-bottom:1px solid var(--border2);z-index:15;">
+    <div id="tl-topbar" style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border);background:var(--bg2);box-shadow:0 1px 3px rgba(30,40,80,0.06)">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-size:15px;font-weight:700;color:var(--text)" id="tl-month-label">4월</span>
+        <span style="font-size:13px;color:var(--text3)" id="tl-year-label">2026</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:6px">
+        <span style="font-size:10px;color:var(--text3);margin-right:4px">← 가로 스크롤</span>
+        <button class="cal-nav-btn" onclick="moveTlMon(-1)">◀</button>
+        <button class="cal-nav-btn" onclick="moveTlMon(0)" style="font-size:10px;width:36px">오늘</button>
+        <button class="cal-nav-btn" onclick="moveTlMon(1)">▶</button>
+      </div>
+    </div>
+    <div id="tl-header-scroll" style="overflow-x:auto;overflow-y:hidden;scrollbar-width:none;-webkit-overflow-scrolling:touch;">
+      <table class="tl-table" id="tl-header-table" style="margin:0"></table>
+    </div>
   </div>
 
   <div class="content">
@@ -825,10 +873,18 @@ html, body {
             <div>
               <label class="form-label" style="font-size:10px">시작일</label>
               <input type="date" class="form-control" id="f-start" onchange="checkConflict()">
+              <select class="form-control" id="f-start-ampm" onchange="checkConflict()" style="margin-top:5px;font-size:13px">
+                <option value="am">오전 시작</option>
+                <option value="pm">오후 시작</option>
+              </select>
             </div>
             <div>
               <label class="form-label" style="font-size:10px">종료일</label>
               <input type="date" class="form-control" id="f-end" onchange="checkConflict()">
+              <select class="form-control" id="f-end-ampm" onchange="checkConflict()" style="margin-top:5px;font-size:13px">
+                <option value="am">오전 종료</option>
+                <option value="pm" selected>오후 종료</option>
+              </select>
             </div>
           </div>
         </div>
@@ -938,20 +994,32 @@ html, body {
 
     <!-- ══ 현황표 ══ -->
     <div id="sec-timeline" class="section active">
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border);background:var(--bg2);position:sticky;top:0;z-index:5;box-shadow:0 1px 3px rgba(30,40,80,0.06)">
-        <div style="display:flex;align-items:center;gap:10px">
-          <span style="font-size:15px;font-weight:700;color:var(--text)" id="tl-month-label">4월</span>
-          <span style="font-size:13px;color:var(--text3)" id="tl-year-label">2026</span>
-        </div>
-        <div style="display:flex;align-items:center;gap:6px">
-          <span style="font-size:10px;color:var(--text3);margin-right:4px">← 가로 스크롤</span>
-          <button class="cal-nav-btn" onclick="moveTlMon(-1)">◀</button>
-          <button class="cal-nav-btn" onclick="moveTlMon(0)" style="font-size:10px;width:36px">오늘</button>
-          <button class="cal-nav-btn" onclick="moveTlMon(1)">▶</button>
-        </div>
-      </div>
       <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:40px" id="timeline-scroll">
         <div id="timeline-table"></div>
+      </div>
+    </div>
+
+    <!-- ══ 예약 로그 ══ -->
+    <div id="sec-log" class="section">
+      <div style="padding:14px 14px 10px;border-bottom:1px solid var(--border);background:var(--bg2);position:sticky;top:0;z-index:5;box-shadow:0 1px 3px rgba(30,40,80,0.06)">
+        <div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:2px">예약 로그</div>
+        <div style="font-size:11px;color:var(--text2)">월별 예약 내역 조회 및 엑셀 추출</div>
+      </div>
+      <div class="log-toolbar">
+        <select id="log-year" onchange="renderLog()"></select>
+        <select id="log-month" onchange="renderLog()">
+          <option value="1">1월</option><option value="2">2월</option>
+          <option value="3">3월</option><option value="4">4월</option>
+          <option value="5">5월</option><option value="6">6월</option>
+          <option value="7">7월</option><option value="8">8월</option>
+          <option value="9">9월</option><option value="10">10월</option>
+          <option value="11">11월</option><option value="12">12월</option>
+        </select>
+        <button class="log-dl-btn" onclick="exportLogExcel()">⬇ 엑셀 추출</button>
+      </div>
+      <div id="log-summary-row" class="log-summary-row" style="display:none"></div>
+      <div class="log-table-wrap">
+        <table class="log-table" id="log-table"></table>
       </div>
     </div>
 
@@ -1014,6 +1082,65 @@ html, body {
       <button class="modal-close" onclick="closeModalDirect()">✕</button>
     </div>
     <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<!-- 고장 등록 모달 -->
+<div class="modal-overlay" id="broken-modal-overlay" onclick="closeBrokenModal(event)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div class="modal-title">⚠️ 고장 등록</div>
+      <button class="modal-close" onclick="closeBrokenModalDirect()">✕</button>
+    </div>
+    <div class="modal-body" style="padding:16px 18px 20px">
+      <div id="broken-equip-name" style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:16px;padding:10px 12px;background:var(--red-dim);border-radius:8px;border-left:3px solid var(--red)"></div>
+      <div class="form-group" style="margin-bottom:14px">
+        <label class="form-label">고장 발생일</label>
+        <input type="date" class="form-control" id="broken-date" style="font-size:14px">
+      </div>
+      <div class="form-group" style="margin-bottom:18px">
+        <label class="form-label">고장 사유</label>
+        <textarea class="form-control" id="broken-reason" rows="3" placeholder="예: 컴프레서 이상, 센서 오류, 누수 발생 등" style="resize:none;font-size:14px;line-height:1.5"></textarea>
+      </div>
+      <button class="submit-btn" style="background:var(--red)" onclick="confirmBrokenStatus()">고장 등록</button>
+    </div>
+  </div>
+</div>
+
+<!-- 장비 수정 모달 -->
+<div class="modal-overlay" id="edit-equip-modal-overlay" onclick="closeEditEquipModal(event)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div class="modal-title">✏️ 장비 정보 수정</div>
+      <button class="modal-close" onclick="closeEditEquipModalDirect()">✕</button>
+    </div>
+    <div class="modal-body" style="padding:16px 18px 20px">
+      <div class="form-group" style="margin-bottom:14px">
+        <label class="form-label">장비명</label>
+        <input type="text" class="form-control" id="edit-equip-name" style="font-size:14px">
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px">
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label">자산 코드</label>
+          <input type="text" class="form-control" id="edit-equip-code" placeholder="XXXX-000000" style="font-size:14px">
+        </div>
+        <div class="form-group" style="margin-bottom:0">
+          <label class="form-label">내부 크기 (mm)</label>
+          <input type="text" class="form-control" id="edit-equip-size" placeholder="W*D*H" style="font-size:14px">
+        </div>
+      </div>
+      <div class="form-group" style="margin-bottom:14px">
+        <label class="form-label">예약 방식</label>
+        <input type="text" class="form-control" id="edit-equip-mode" style="font-size:14px">
+      </div>
+      <div class="form-group" id="edit-fixed-condition-group" style="margin-bottom:14px;display:none">
+        <label class="form-label">고정조건</label>
+        <input type="text" class="form-control" id="edit-equip-fixed-condition" style="font-size:14px">
+      </div>
+      <button class="submit-btn" id="edit-equip-submit-btn" onclick="submitEditEquip()">수정 저장</button>
+    </div>
   </div>
 </div>
 
@@ -1190,7 +1317,12 @@ window.addEventListener('firebase-ready', async () => {
   window.bindTlClick();
 
   loading.classList.add('gone');
-  setTimeout(() => { loading.style.display='none'; mainApp.style.display='flex'; }, 400);
+  setTimeout(() => {
+    loading.style.display='none';
+    mainApp.style.display='flex';
+    const tlHdr = document.getElementById('tl-fixed-header');
+    if (tlHdr) tlHdr.style.display = 'flex';
+  }, 400);
 });
 
 // 오프라인 감지
@@ -1215,6 +1347,7 @@ function renderAll() {
   if (activeTab === 'stats')    renderStats();
   if (activeTab === 'mgmt')     renderMgmt();
   if (activeTab === 'timeline') renderTimeline();
+  if (activeTab === 'log')      renderLog();
 }
 
 function populateSelects() {
@@ -1257,12 +1390,28 @@ function populateEquipSelects() {
   if (prev_ce) ce.value = prev_ce;
 }
 
-// ── 실효 상태 계산: 예약 기간이면 무조건 'inuse' ──
+// 오전/오후 반일 단위 비교
+function toHalf(dateStr, ampm) {
+  const d = parseDateSafe(dateStr);
+  return d.getTime() / 86400000 * 2 + (ampm === 'pm' ? 1 : 0);
+}
+function halfOverlap(startA, ampmStartA, endA, ampmEndA, startB, ampmStartB, endB, ampmEndB) {
+  const sA = toHalf(startA, ampmStartA), eA = toHalf(endA, ampmEndA);
+  const sB = toHalf(startB, ampmStartB), eB = toHalf(endB, ampmEndB);
+  return sA <= eB && eA >= sB;
+}
+
+// ── 실효 상태 계산 ──
 function effectiveStatus(equip) {
   if (equip.status === 'broken') return 'broken';
   if (equip.status === 'fixed')  return 'fixed';
   const todayStr = today();
-  const activeBook = bookings.find(b => b.equipId === equip.id && b.start <= todayStr && b.end >= todayStr);
+  const nowHalf = new Date().getHours() < 12 ? 'am' : 'pm';
+  const activeBook = bookings.find(b =>
+    b.equipId === equip.id &&
+    halfOverlap(todayStr, nowHalf, todayStr, nowHalf,
+                b.start, b.startAmPm||'am', b.end, b.endAmPm||'pm')
+  );
   return activeBook ? 'inuse' : 'available';
 }
 
@@ -1435,9 +1584,11 @@ function computeTimelineLabelPositions(showEquips, bookMap, days) {
 
 
 function renderTimeline() {
-  const wrap = document.getElementById('timeline-table');
+  const wrap      = document.getElementById('timeline-table');
   if (!wrap) return;
-  const sc = document.getElementById('timeline-scroll');
+  const sc        = document.getElementById('timeline-scroll');
+  const hdrScroll = document.getElementById('tl-header-scroll');
+  const hdrTable  = document.getElementById('tl-header-table');
   if (sc) sc.style.overflowX = 'scroll';
 
   const MONTH_KR = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
@@ -1463,18 +1614,31 @@ function renderTimeline() {
   const bookMap = {};
   bookings.forEach(b => { if (!bookMap[b.equipId]) bookMap[b.equipId]=[]; bookMap[b.equipId].push(b); });
   const d0 = days[0].date, dN = days[days.length-1].date;
-  const tlLabelPositions = computeTimelineLabelPositions(showEquips, bookMap, days);
 
   if (!window.tlGroupCollapsed) window.tlGroupCollapsed = {};
 
-  const rows = [];
-  const hCells = ['<th class="tl-equip-cell" style="font-size:10px;font-weight:700;color:var(--text3);min-width:130px">장비명</th>'];
+  // 열 너비
+  const EQUIP_W = 200, HALF_W = 28;
+  const colgroup = '<colgroup><col style="width:' + EQUIP_W + 'px">' +
+    days.map(() => '<col style="width:' + HALF_W + 'px"><col style="width:' + HALF_W + 'px">').join('') +
+    '</colgroup>';
+
+  // 헤더 테이블
+  const hRow1 = ['<th class="tl-equip-cell" rowspan="2" style="font-size:10px;font-weight:700;color:var(--text3);vertical-align:middle;position:sticky;left:0;z-index:20;background:#f1f5f9">장비명</th>'];
   days.forEach(d => {
     const cls = d.date===todayStr?'today-h':d.dow===6?'sat-h':d.dow===0?'sun-h':'';
-    hCells.push('<th class="tl-day-header ' + cls + '">' + new Date(d.date+'T00:00:00').getDate() + '</th>');
+    hRow1.push('<th class="tl-day-header ' + cls + '" colspan="2">' + new Date(d.date+'T00:00:00').getDate() + '</th>');
   });
-  rows.push('<thead><tr>' + hCells.join('') + '</tr></thead>');
+  const hRow2 = [];
+  days.forEach(d => {
+    const sub = d.date===todayStr?' today-sub':'';
+    hRow2.push('<th class="tl-ampm-header am' + sub + '">오전</th><th class="tl-ampm-header pm' + sub + '">오후</th>');
+  });
+  if (hdrTable) {
+    hdrTable.innerHTML = colgroup + '<thead><tr>' + hRow1.join('') + '</tr><tr>' + hRow2.join('') + '</tr></thead>';
+  }
 
+  // 바디 테이블
   const bodyRows = [];
   let prevGroup = null;
 
@@ -1486,60 +1650,76 @@ function renderTimeline() {
       bodyRows.push(
         '<tr style="cursor:pointer">' +
           '<td class="tl-group-sticky" data-grp="' + eq.group + '">' +
-            '<span style="margin-right:6px;font-size:10px;display:inline-block;transition:transform .15s">' + arrow + '</span>' +
-            eq.group +
+            '<span style="margin-right:6px;font-size:10px">' + arrow + '</span>' + eq.group +
           '</td>' +
-          '<td colspan="' + days.length + '" style="background:#eff6ff;border-bottom:1px solid #bfdbfe"></td>' +
+          '<td colspan="' + (days.length * 2) + '" style="background:#eff6ff;border-bottom:1px solid #bfdbfe"></td>' +
         '</tr>'
       );
     }
     if (window.tlGroupCollapsed[eq.group]) return;
 
     const myBooks = (bookMap[eq.id]||[]).filter(b => b.end>=d0 && b.start<=dN);
-
     const effSt = effectiveStatus(eq);
     const dot = effSt==='inuse'?'#2563eb':effSt==='fixed'?'#d97706':effSt==='broken'?'#dc2626':'#16a34a';
-    const modeTag = (effSt==='fixed' && eq.mode) ?
-      ' <span style="font-size:9px;color:#92400e;background:#fef3c7;border-radius:3px;padding:1px 4px">' + (eq.mode||'').split('\n').join(' ').substring(0,20) + '</span>' : '';
+    const modeTag = (effSt==='fixed' && (eq.fixedCondition || eq.mode))
+      ? ' <span style="font-size:9px;color:#92400e;background:#fef3c7;border-radius:3px;padding:1px 4px">' + (eq.fixedCondition||eq.mode||'') + '</span>'
+      : '';
 
-    const nameTd = '<td class="tl-equip-cell tl-book-cell" data-eid="' + eq.id + '" data-date="" style="cursor:pointer">' +
+    const nameTd = '<td class="tl-equip-cell tl-book-cell" data-eid="' + eq.id + '" data-date="" data-half="am" style="cursor:pointer">' +
       '<span style="width:6px;height:6px;border-radius:50%;background:' + dot + ';display:inline-block;margin-right:5px;vertical-align:middle"></span>' +
       eq.name + modeTag + '</td>';
 
     const cells = [nameTd];
     days.forEach(d => {
-      const book = myBooks.find(b => b.start<=d.date && b.end>=d.date);
-      const tc = d.date===todayStr?' today-col':'';
-      if (book) {
-        const cls = getUserBookingClass(book.user);
-        const labelPos = tlLabelPositions[eq.id + '__' + book.id] || 'mid';
-        const lbl = book.start===d.date ? '<span class="tl-label ' + labelPos + '">' + (book.user.split('_').pop()||book.user) + (book.spec?' '+book.spec:'') + '</span>' : '';
-        cells.push('<td class="tl-cell ' + cls + tc + ' tl-book-cell" data-eid="' + eq.id + '" data-date="' + d.date + '">' + lbl + '</td>');
-      } else if (effSt==='fixed') {
-        const fixedBg = d.date===todayStr ? '#eef5ff' : '#fef9ef';
-        cells.push('<td class="tl-cell' + tc + '" style="background:' + fixedBg + '"></td>');
-      } else {
-        cells.push('<td class="tl-cell tl-book-cell' + tc + '" data-eid="' + eq.id + '" data-date="' + d.date + '" style="cursor:pointer"></td>');
-      }
+      const isToday = d.date === todayStr;
+      const tc = isToday ? ' today-col' : '';
+      ['am','pm'].forEach(half => {
+        const halfClass = half === 'pm' ? ' pm-cell' : '';
+        const book = myBooks.find(b => {
+          const sH = toHalf(b.start, b.startAmPm||'am');
+          const eH = toHalf(b.end,   b.endAmPm||'pm');
+          const cH = toHalf(d.date,  half);
+          return sH <= cH && cH <= eH;
+        });
+        if (book) {
+          const cls = getUserBookingClass(book.user);
+          const isStart = book.start === d.date && (book.startAmPm||'am') === half;
+          const lbl = isStart
+            ? '<span class="tl-label mid">' + (book.user.split('_').pop()||book.user) + (book.spec?' '+book.spec:'') + '</span>'
+            : '';
+          cells.push('<td class="tl-cell ' + cls + tc + halfClass + ' tl-book-cell" data-eid="' + eq.id + '" data-date="' + d.date + '" data-half="' + half + '">' + lbl + '</td>');
+        } else if (effSt === 'fixed') {
+          const fixedBg = isToday ? '#eef5ff' : '#fef9ef';
+          cells.push('<td class="tl-cell' + tc + halfClass + '" style="background:' + fixedBg + '"></td>');
+        } else {
+          cells.push('<td class="tl-cell tl-book-cell' + tc + halfClass + '" data-eid="' + eq.id + '" data-date="' + d.date + '" data-half="' + half + '" style="cursor:pointer"></td>');
+        }
+      });
     });
     bodyRows.push('<tr>' + cells.join('') + '</tr>');
   });
 
-  rows.push('<tbody>' + bodyRows.join('') + '</tbody>');
-  wrap.innerHTML = '<table class="tl-table">' + rows.join('') + '</table>';
+  wrap.innerHTML = '<table class="tl-table">' + colgroup + '<tbody>' + bodyRows.join('') + '</tbody></table>';
 
-  // 클릭 이벤트는 document 레벨에서 처리 (tlTableClick)
+  // 가로 스크롤 동기화
+  if (sc && hdrScroll && !sc._syncBound) {
+    sc._syncBound = true;
+    sc.addEventListener('scroll', () => { hdrScroll.scrollLeft = sc.scrollLeft; });
+    hdrScroll.addEventListener('scroll', () => { sc.scrollLeft = hdrScroll.scrollLeft; });
+  }
 
   const todayIdx = days.findIndex(d => d.date===todayStr);
   if (sc) {
     const restoreLeft = timelineScrollRestore;
     setTimeout(() => {
-      if (restoreLeft !== null) {
-        sc.scrollLeft = restoreLeft;
-        timelineScrollRestore = null;
-      } else if (todayIdx > 0) {
-        sc.scrollLeft = Math.max(0, 130 + todayIdx * 28 - sc.clientWidth / 2);
+      const target = restoreLeft !== null
+        ? restoreLeft
+        : todayIdx > 0 ? Math.max(0, EQUIP_W + todayIdx * (HALF_W * 2) - sc.clientWidth / 2) : null;
+      if (target !== null) {
+        sc.scrollLeft = target;
+        if (hdrScroll) hdrScroll.scrollLeft = target;
       }
+      timelineScrollRestore = null;
     }, 30);
   }
 }
@@ -1575,35 +1755,43 @@ function toggleTlGroup(group) {
       // 예약 셀 클릭
       const bookCell = e.target.closest('.tl-book-cell');
       if (bookCell && bookCell.closest('#timeline-table')) {
-        const eid = bookCell.dataset.eid;
-        const dt = bookCell.dataset.date || today();
-        const targetBooking = bookings.find(b => b.equipId === eid && b.start <= dt && b.end >= dt);
+        const eid  = bookCell.dataset.eid;
+        const dt   = bookCell.dataset.date || today();
+        const half = bookCell.dataset.half || 'am';
+        const targetBooking = bookings.find(b => {
+          if (b.equipId !== eid) return false;
+          const sH = toHalf(b.start, b.startAmPm||'am');
+          const eH = toHalf(b.end,   b.endAmPm||'pm');
+          const cH = toHalf(dt, half);
+          return sH <= cH && cH <= eH;
+        });
         if (targetBooking) {
           startBookingEdit(targetBooking.id);
         } else {
-          goBookFromTl(eid, dt);
+          goBookFromTl(eid, dt, half);
         }
       }
     });
   };
 })();
 
-// 4번: 현황표에서 예약으로 이동
-function goBookFromTl(equipId, dateStr) {
+// 현황표에서 예약으로 이동
+function goBookFromTl(equipId, dateStr, half) {
   resetBookingForm();
   document.getElementById('f-equip').value = equipId;
   if (dateStr) {
     document.getElementById('f-start').value = dateStr;
-    document.getElementById('f-end').value = dateStr;
+    document.getElementById('f-end').value   = dateStr;
+    const sa = document.getElementById('f-start-ampm');
+    const ea = document.getElementById('f-end-ampm');
+    if (sa) sa.value = half || 'am';
+    if (ea) ea.value = 'pm';
   } else {
     document.getElementById('f-start').value = today();
-    document.getElementById('f-end').value = today();
+    document.getElementById('f-end').value   = today();
   }
   const cb = document.getElementById('cancel-book-btn');
-  if (cb) {
-    cb.textContent = '취소';
-    cb.style.display = 'block';
-  }
+  if (cb) { cb.textContent = '취소'; cb.style.display = 'block'; }
   checkConflict();
   switchTab('book');
 }
@@ -1650,7 +1838,7 @@ function onCellClick(dateStr) {
     return `<div class="modal-event-card">
       <div class="mec-user">${b.user}</div>
       <div style="font-size:11px;color:var(--text3);margin-bottom:3px">${eq?eq.name:'—'}</div>
-      <div class="mec-date">${b.start} ~ ${b.end}</div>
+      <div class="mec-date">${b.start} ${b.startAmPm==='pm'?'오후':'오전'} ~ ${b.end} ${b.endAmPm==='am'?'오전':'오후'}</div>
       ${b.spec ? `<div class="mec-spec">${b.spec}</div>` : ''}
       ${b.memo ? `<div class="mec-spec" style="color:var(--text3)">${b.memo}</div>` : ''}
       <div style="margin-top:8px">
@@ -1691,7 +1879,7 @@ function renderMine() {
           <button class="del-btn" onclick="deleteBooking('${b.id}','${b.user}')">취소</button>
         </div>
       </div>
-      <div class="my-item-date">${b.start} ~ ${b.end}</div>
+      <div class="my-item-date">${b.start} ${b.startAmPm==='pm'?'오후':'오전'} ~ ${b.end} ${b.endAmPm==='am'?'오전':'오후'}</div>
       ${b.spec  ? `<div class="my-item-spec">${b.spec}</div>` : ''}
       ${b.memo  ? `<div style="font-size:11px;color:var(--text3);margin-top:4px">${b.memo}</div>` : ''}
     </div>`;
@@ -1747,6 +1935,11 @@ function renderMgmt() {
     stBtn.textContent = '상태변경';
     stBtn.addEventListener('click', () => toggleStatus(e.id));
     actions.appendChild(stBtn);
+    const editBtn = document.createElement('button');
+    editBtn.className = 'mgmt-btn';
+    editBtn.textContent = '수정';
+    editBtn.addEventListener('click', () => openEditEquipModal(e.id));
+    actions.appendChild(editBtn);
     if (e.status === 'fixed') {
       const condBtn = document.createElement('button');
       condBtn.className = 'mgmt-btn';
@@ -2126,6 +2319,124 @@ function renderStats() {
 }
 
 // ═══════════════════════════════════════════════
+//  예약 로그
+// ═══════════════════════════════════════════════
+function initLogSelects() {
+  const yearSel = document.getElementById('log-year');
+  if (!yearSel || yearSel.options.length > 0) return;
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  for (let y = currentYear - 2; y <= currentYear + 1; y++) {
+    const o = document.createElement('option');
+    o.value = y; o.textContent = y + '년';
+    if (y === currentYear) o.selected = true;
+    yearSel.appendChild(o);
+  }
+  document.getElementById('log-month').value = now.getMonth() + 1;
+}
+
+function getLogRows() {
+  const year  = parseInt(document.getElementById('log-year')?.value  || new Date().getFullYear());
+  const month = parseInt(document.getElementById('log-month')?.value || (new Date().getMonth() + 1));
+  const mStr  = String(month).padStart(2, '0');
+  const start = year + '-' + mStr + '-01';
+  const lastDay = new Date(year, month, 0).getDate();
+  const end   = year + '-' + mStr + '-' + String(lastDay).padStart(2, '0');
+  return bookings
+    .filter(b => b.start <= end && b.end >= start)
+    .sort((a, b) => a.start.localeCompare(b.start))
+    .map(b => {
+      const eq = equipments.find(e => e.id === b.equipId);
+      const oStart = b.start < start ? start : b.start;
+      const oEnd   = b.end   > end   ? end   : b.end;
+      const days = daysBetweenInclusive(oStart, oEnd);
+      return {
+        equipName:  eq ? eq.name  : '(삭제된 장비)',
+        group:      eq ? (eq.group || '미분류') : '—',
+        user:       b.user,
+        spec:       b.spec  || '',
+        start:      b.start,
+        startAmPm:  b.startAmPm || 'am',
+        end:        b.end,
+        endAmPm:    b.endAmPm   || 'pm',
+        daysInMonth: days,
+        memo:       b.memo  || '',
+        id:         b.id
+      };
+    });
+}
+
+function renderLog() {
+  initLogSelects();
+  const year  = parseInt(document.getElementById('log-year')?.value);
+  const month = parseInt(document.getElementById('log-month')?.value);
+  const rows  = getLogRows();
+  const table = document.getElementById('log-table');
+  const sumEl = document.getElementById('log-summary-row');
+  if (!table) return;
+
+  if (!rows.length) {
+    table.innerHTML = '<tr><td colspan="8" class="log-empty">📭 ' + year + '년 ' + month + '월 예약 내역이 없습니다</td></tr>';
+    sumEl.style.display = 'none';
+    return;
+  }
+
+  const totalDays   = rows.reduce((s, r) => s + r.daysInMonth, 0);
+  const uniqueEquips = new Set(rows.map(r => r.equipName)).size;
+  sumEl.style.display = 'flex';
+  sumEl.innerHTML = '<span>예약 <strong>' + rows.length + '건</strong></span>' +
+    '<span>장비 <strong>' + uniqueEquips + '대</strong></span>' +
+    '<span>총 사용일수 <strong>' + totalDays + '일</strong></span>' +
+    '<span style="color:var(--text3)">' + year + '년 ' + month + '월 기준</span>';
+
+  table.innerHTML = '<thead><tr>' +
+    '<th>장비명</th><th>시험실</th><th>예약자</th><th>시험규격</th>' +
+    '<th>시작일</th><th>종료일</th><th>해당월 일수</th><th>메모</th>' +
+    '</tr></thead><tbody>' +
+    rows.map(r =>
+      '<tr>' +
+      '<td style="font-weight:600">' + r.equipName + '</td>' +
+      '<td style="color:var(--text2)">' + r.group + '</td>' +
+      '<td>' + r.user + '</td>' +
+      '<td style="font-family:var(--mono);font-size:11px">' + (r.spec || '<span style="color:var(--text3)">—</span>') + '</td>' +
+      '<td style="font-family:var(--mono);font-size:11px;white-space:nowrap">' + r.start + ' ' + (r.startAmPm==='pm'?'오후':'오전') + '</td>' +
+      '<td style="font-family:var(--mono);font-size:11px;white-space:nowrap">' + r.end + ' ' + (r.endAmPm==='am'?'오전':'오후') + '</td>' +
+      '<td><span class="log-days-badge">' + r.daysInMonth + '일</span></td>' +
+      '<td style="color:var(--text2)">' + (r.memo||'') + '</td>' +
+      '</tr>'
+    ).join('') + '</tbody>';
+}
+
+function exportLogExcel() {
+  if (typeof XLSX === 'undefined') { showToast('엑셀 라이브러리 로딩 중입니다. 잠시 후 다시 시도해주세요.', 'error'); return; }
+  const year  = parseInt(document.getElementById('log-year')?.value  || new Date().getFullYear());
+  const month = parseInt(document.getElementById('log-month')?.value || (new Date().getMonth() + 1));
+  const rows  = getLogRows();
+  if (!rows.length) { showToast('추출할 예약 내역이 없습니다', 'error'); return; }
+
+  const wsData = [['장비명','시험실','예약자','시험규격/모델','시작일','시작','종료일','종료','해당월 사용일수','전체 예약일수','메모']];
+  rows.forEach(r => {
+    wsData.push([
+      r.equipName, r.group, r.user, r.spec,
+      r.start, r.startAmPm==='pm'?'오후':'오전',
+      r.end,   r.endAmPm==='am'?'오전':'오후',
+      r.daysInMonth, daysBetweenInclusive(r.start, r.end), r.memo
+    ]);
+  });
+  wsData.push(['합계','',rows.length+'건','','','','','',
+    rows.reduce((s,r)=>s+r.daysInMonth,0),
+    rows.reduce((s,r)=>s+daysBetweenInclusive(r.start,r.end),0), '']);
+
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.aoa_to_sheet(wsData);
+  ws['!cols'] = [{wch:28},{wch:16},{wch:14},{wch:20},{wch:12},{wch:8},{wch:12},{wch:8},{wch:14},{wch:14},{wch:24}];
+  XLSX.utils.book_append_sheet(wb, ws, year+'년 '+month+'월 예약로그');
+  const mStr = String(month).padStart(2,'0');
+  XLSX.writeFile(wb, '장비예약로그_'+year+mStr+'.xlsx');
+  showToast(year+'년 '+month+'월 로그 엑셀 추출 완료!', 'success');
+}
+
+// ═══════════════════════════════════════════════
 //  인터랙션
 // ═══════════════════════════════════════════════
 function resetGroupFilterScroll() {
@@ -2153,6 +2464,9 @@ function switchTab(t) {
     fb.style.display = (t === 'list' || t === 'timeline') ? 'flex' : 'none';
     if (t === 'list' || t === 'timeline') resetGroupFilterScroll();
   }
+  // 현황표 탭일 때 고정 헤더 표시
+  const tlHdr = document.getElementById('tl-fixed-header');
+  if (tlHdr) tlHdr.style.display = (t === 'timeline') ? 'flex' : 'none';
   renderAll();
   if (t === 'timeline') setTimeout(() => renderTimeline(), 100);
 }
@@ -2163,23 +2477,38 @@ function onUserChange() {
 }
 
 function checkConflict() {
-  const equipId = document.getElementById('f-equip').value;
-  const start   = document.getElementById('f-start').value;
-  const end     = document.getElementById('f-end').value;
-  const warn    = document.getElementById('conflict-warning');
-  const btn     = document.getElementById('submit-btn');
+  const equipId   = document.getElementById('f-equip').value;
+  const start     = document.getElementById('f-start').value;
+  const end       = document.getElementById('f-end').value;
+  const startAmpm = document.getElementById('f-start-ampm')?.value || 'am';
+  const endAmpm   = document.getElementById('f-end-ampm')?.value   || 'pm';
+  const warn      = document.getElementById('conflict-warning');
+  const btn       = document.getElementById('submit-btn');
   warn.style.display = 'none';
   btn.disabled = false;
-  btn.textContent = '예약 등록';
+  btn.textContent = editingBookingId ? '예약 수정 저장' : '예약 등록';
 
   if (!equipId || !start || !end) return;
-
-  const conflicts = bookings.filter(b =>
-    b.equipId === equipId && b.start <= end && b.end >= start
-  );
+  if (end < start || (end === start && toHalf(start, startAmpm) > toHalf(end, endAmpm))) {
+    warn.style.display = 'block';
+    warn.innerHTML = '[X] 종료 시점이 시작 시점보다 앞입니다';
+    btn.disabled = true; btn.style.opacity = '0.5';
+    btn.textContent = '기간 오류 - 예약 불가';
+    return;
+  }
+  const conflicts = bookings.filter(b => {
+    if (b.equipId !== equipId) return false;
+    if (b.id === editingBookingId) return false;
+    return halfOverlap(start, startAmpm, end, endAmpm,
+                       b.start, b.startAmPm||'am', b.end, b.endAmPm||'pm');
+  });
   if (conflicts.length) {
     const names = [...new Set(conflicts.map(b => b.user))].join(', ');
-    const dates = conflicts.map(b => b.start + ' ~ ' + b.end).join(', ');
+    const dates = conflicts.map(b => {
+      const sa = b.startAmPm==='pm'?'오후':'오전';
+      const ea = b.endAmPm==='am'?'오전':'오후';
+      return b.start+sa+' ~ '+b.end+ea;
+    }).join(', ');
     warn.style.display = 'block';
     warn.innerHTML = '[X] ' + names + ' 예약과 기간이 겹칩니다<br><span style="font-size:11px;opacity:.8">' + dates + '</span>';
     btn.disabled = true;
@@ -2187,7 +2516,7 @@ function checkConflict() {
     btn.style.opacity = '0.5';
   } else {
     btn.disabled = false;
-    btn.textContent = '예약 등록';
+    btn.textContent = editingBookingId ? '예약 수정 저장' : '예약 등록';
     btn.style.opacity = '1';
   }
 }
@@ -2195,10 +2524,7 @@ function checkConflict() {
 
 function startBookingEdit(bookingId) {
   const b = bookings.find(x => x.id === bookingId);
-  if (!b) {
-    showToast('예약 정보를 찾을 수 없습니다', 'error');
-    return;
-  }
+  if (!b) { showToast('예약 정보를 찾을 수 없습니다', 'error'); return; }
   editingBookingId = bookingId;
   switchTab('book');
   document.getElementById('f-user').value = members.includes(b.user) ? b.user : '직접입력';
@@ -2209,17 +2535,18 @@ function startBookingEdit(bookingId) {
     document.getElementById('f-custom-user').value = '';
   }
   document.getElementById('f-equip').value = b.equipId || '';
-  document.getElementById('f-spec').value = b.spec || '';
-  document.getElementById('f-start').value = b.start || '';
-  document.getElementById('f-end').value = b.end || '';
-  document.getElementById('f-memo').value = b.memo || '';
+  document.getElementById('f-spec').value  = b.spec    || '';
+  document.getElementById('f-start').value = b.start   || '';
+  document.getElementById('f-end').value   = b.end     || '';
+  const sa = document.getElementById('f-start-ampm');
+  const ea = document.getElementById('f-end-ampm');
+  if (sa) sa.value = b.startAmPm || 'am';
+  if (ea) ea.value = b.endAmPm   || 'pm';
+  document.getElementById('f-memo').value  = b.memo    || '';
   const sb = document.getElementById('submit-btn');
   const cb = document.getElementById('cancel-book-btn');
   if (sb) sb.textContent = '예약 수정 저장';
-  if (cb) {
-    cb.textContent = '취소';
-    cb.style.display = 'block';
-  }
+  if (cb) { cb.textContent = '취소'; cb.style.display = 'block'; }
   checkConflict();
 }
 
@@ -2229,10 +2556,14 @@ function resetBookingForm() {
   document.getElementById('f-custom-user').value = '';
   document.getElementById('custom-user-group').style.display = 'none';
   document.getElementById('f-equip').value = '';
-  document.getElementById('f-spec').value = '';
+  document.getElementById('f-spec').value  = '';
   document.getElementById('f-start').value = '';
-  document.getElementById('f-end').value = '';
-  document.getElementById('f-memo').value = '';
+  document.getElementById('f-end').value   = '';
+  const sa = document.getElementById('f-start-ampm');
+  const ea = document.getElementById('f-end-ampm');
+  if (sa) sa.value = 'am';
+  if (ea) ea.value = 'pm';
+  document.getElementById('f-memo').value  = '';
   const sb = document.getElementById('submit-btn');
   const cb = document.getElementById('cancel-book-btn');
   if (sb) sb.textContent = '예약 등록';
@@ -2246,30 +2577,30 @@ function cancelBookingForm() {
 }
 
 async function submitBooking() {
-  const userSel = document.getElementById('f-user').value;
-  const user    = userSel === '직접입력'
-    ? document.getElementById('f-custom-user').value.trim()
-    : userSel;
-  const equipId = document.getElementById('f-equip').value;
-  const spec    = document.getElementById('f-spec').value.trim();
-  const start   = document.getElementById('f-start').value;
-  const end     = document.getElementById('f-end').value;
-  const memo    = document.getElementById('f-memo').value.trim();
+  const userSel   = document.getElementById('f-user').value;
+  const user      = userSel === '직접입력'
+    ? document.getElementById('f-custom-user').value.trim() : userSel;
+  const equipId   = document.getElementById('f-equip').value;
+  const spec      = document.getElementById('f-spec').value.trim();
+  const start     = document.getElementById('f-start').value;
+  const end       = document.getElementById('f-end').value;
+  const startAmPm = document.getElementById('f-start-ampm')?.value || 'am';
+  const endAmPm   = document.getElementById('f-end-ampm')?.value   || 'pm';
+  const memo      = document.getElementById('f-memo').value.trim();
 
   if (!user || !equipId || !start || !end) { showToast('필수 항목을 모두 입력해주세요', 'error'); return; }
-  if (end < start) { showToast('종료일이 시작일보다 이른 날짜입니다', 'error'); return; }
+  if (end < start || (end === start && toHalf(start, startAmPm) > toHalf(end, endAmPm))) {
+    showToast('종료 시점이 시작 시점보다 앞입니다', 'error'); return;
+  }
 
   const conflicts = bookings.filter(b =>
-    b.equipId === equipId &&
-    b.id !== editingBookingId &&
-    b.start <= end &&
-    b.end >= start
+    b.equipId === equipId && b.id !== editingBookingId &&
+    halfOverlap(start, startAmPm, end, endAmPm,
+                b.start, b.startAmPm||'am', b.end, b.endAmPm||'pm')
   );
   if (conflicts.length > 0) {
     const names = [...new Set(conflicts.map(b => b.user))].join(', ');
-    const dates = conflicts.map(b => `${b.start}~${b.end}`).join(', ');
-    showToast('[X] 예약 불가 - ' + names + ' 사용 중 (' + dates + ')', 'error');
-    return;
+    showToast('[X] 예약 불가 - ' + names + ' 사용 중', 'error'); return;
   }
 
   const btn = document.getElementById('submit-btn');
@@ -2280,14 +2611,14 @@ async function submitBooking() {
   try {
     if (editingBookingId) {
       await fbFns.updateDoc(fbFns.doc(db, 'bookings', editingBookingId), {
-        user, equipId, spec, start, end, memo
+        user, equipId, spec, start, end, startAmPm, endAmPm, memo
       });
       showToast('예약이 수정되었습니다!', 'success');
       resetBookingForm();
       switchTab('timeline');
     } else {
       await fbFns.addDoc(fbFns.collection(db, 'bookings'), {
-        user, equipId, spec, start, end, memo,
+        user, equipId, spec, start, end, startAmPm, endAmPm, memo,
         createdAt: fbFns.serverTimestamp()
       });
       showToast('예약이 등록되었습니다!', 'success');
@@ -2358,25 +2689,32 @@ function toggleStatus(id) {
   el.style.display = el.style.display === 'none' ? 'block' : 'none';
 }
 
+let _pendingBrokenId = null;
+
 async function applyStatus(id, next) {
   const cur = document.getElementById('status-sel-' + id);
   if (cur) cur.style.display = 'none';
   const eq = equipments.find(e => e.id === id);
   if (!eq) return;
 
-  let payload = { status: next };
+  if (next === 'broken') {
+    _pendingBrokenId = id;
+    document.getElementById('broken-equip-name').textContent = '🔧 ' + eq.name;
+    document.getElementById('broken-date').value = today();
+    document.getElementById('broken-reason').value = '';
+    document.getElementById('broken-modal-overlay').classList.add('open');
+    return;
+  }
 
+  let payload = { status: next };
   if (next === 'fixed') {
     const nextCond = prompt('전용장비 고정조건을 입력하세요.', eq.fixedCondition || eq.mode || '');
     if (nextCond === null) return;
     payload.fixedCondition = nextCond.trim();
   }
-
   try {
     await fbFns.updateDoc(fbFns.doc(db, 'equipments', id), payload);
-    if (next === 'fixed') {
-      await ensureFixedDefaultBooking(id, payload.fixedCondition);
-    }
+    if (next === 'fixed') await ensureFixedDefaultBooking(id, payload.fixedCondition);
     showToast('상태가 변경되었습니다', 'success');
   } catch(err) {
     console.error(err);
@@ -2384,15 +2722,92 @@ async function applyStatus(id, next) {
   }
 }
 
-async function retireEquip(id, name) {
-  if (!confirm(`"${name}"을 폐기 처리하시겠습니까?\n연관된 예약 일정은 별도로 확인해주세요.`)) return;
+async function confirmBrokenStatus() {
+  const id = _pendingBrokenId;
+  if (!id) return;
+  const brokenDate   = document.getElementById('broken-date').value;
+  const brokenReason = document.getElementById('broken-reason').value.trim();
+  if (!brokenDate)   { showToast('고장 발생일을 선택해주세요', 'error'); return; }
+  if (!brokenReason) { showToast('고장 사유를 입력해주세요', 'error'); return; }
+  const btn = document.querySelector('#broken-modal-overlay .submit-btn');
+  btn.disabled = true; btn.textContent = '등록 중...';
   try {
-    await fbFns.updateDoc(fbFns.doc(db, 'equipments', id), { status: 'broken' });
-    showToast(`"${name}" 폐기 처리되었습니다`, 'success');
+    await fbFns.updateDoc(fbFns.doc(db, 'equipments', id), { status:'broken', brokenDate, brokenReason });
+    showToast('고장으로 등록되었습니다', 'success');
+    closeBrokenModalDirect();
   } catch(err) {
-    showToast('처리에 실패했습니다', 'error');
+    console.error(err);
+    showToast('등록에 실패했습니다', 'error');
+  } finally {
+    btn.disabled = false; btn.textContent = '고장 등록';
   }
 }
+
+function closeBrokenModal(e) {
+  if (e.target === document.getElementById('broken-modal-overlay')) closeBrokenModalDirect();
+}
+function closeBrokenModalDirect() {
+  document.getElementById('broken-modal-overlay').classList.remove('open');
+  _pendingBrokenId = null;
+}
+
+async function retireEquip(id, name) {
+  if (!confirm(`"${name}"을 고장/폐기 처리하시겠습니까?\n연관된 예약 일정은 별도로 확인해주세요.`)) return;
+  _pendingBrokenId = id;
+  document.getElementById('broken-equip-name').textContent = '🔧 ' + name;
+  document.getElementById('broken-date').value = today();
+  document.getElementById('broken-reason').value = '';
+  document.getElementById('broken-modal-overlay').classList.add('open');
+}
+
+// ── 장비 정보 수정 모달 ──
+let _editingEquipId = null;
+
+function openEditEquipModal(id) {
+  const eq = equipments.find(e => e.id === id);
+  if (!eq) return;
+  _editingEquipId = id;
+  document.getElementById('edit-equip-name').value = eq.name || '';
+  document.getElementById('edit-equip-code').value = eq.code || '';
+  document.getElementById('edit-equip-size').value = eq.size || '';
+  document.getElementById('edit-equip-mode').value = eq.mode || '';
+  document.getElementById('edit-equip-fixed-condition').value = eq.fixedCondition || '';
+  const fcGroup = document.getElementById('edit-fixed-condition-group');
+  if (fcGroup) fcGroup.style.display = eq.status === 'fixed' ? 'block' : 'none';
+  document.getElementById('edit-equip-modal-overlay').classList.add('open');
+}
+function closeEditEquipModal(e) {
+  if (e.target === document.getElementById('edit-equip-modal-overlay')) closeEditEquipModalDirect();
+}
+function closeEditEquipModalDirect() {
+  document.getElementById('edit-equip-modal-overlay').classList.remove('open');
+  _editingEquipId = null;
+}
+async function submitEditEquip() {
+  if (!_editingEquipId) return;
+  const name = document.getElementById('edit-equip-name').value.trim();
+  const code = document.getElementById('edit-equip-code').value.trim();
+  const size = document.getElementById('edit-equip-size').value.trim();
+  const mode = document.getElementById('edit-equip-mode').value.trim();
+  const fixedCondition = document.getElementById('edit-equip-fixed-condition').value.trim();
+  if (!name) { showToast('장비명을 입력해주세요', 'error'); return; }
+  const btn = document.getElementById('edit-equip-submit-btn');
+  btn.disabled = true; btn.textContent = '저장 중...';
+  try {
+    const eq = equipments.find(e => e.id === _editingEquipId);
+    const payload = { name, code, size, mode };
+    if (eq && eq.status === 'fixed') payload.fixedCondition = fixedCondition;
+    await fbFns.updateDoc(fbFns.doc(db, 'equipments', _editingEquipId), payload);
+    showToast('장비 정보가 수정되었습니다', 'success');
+    closeEditEquipModalDirect();
+  } catch(err) {
+    console.error(err);
+    showToast('수정에 실패했습니다', 'error');
+  } finally {
+    btn.disabled = false; btn.textContent = '수정 저장';
+  }
+}
+
 
 function openEquipModal(id) {
   const eq = equipments.find(e => e.id === id);
@@ -2418,7 +2833,7 @@ function openEquipModal(id) {
       : `<div class="modal-event-list">${myBooks.map(b => `
           <div class="modal-event-card" style="border-left-color:${COLOR_STYLES[c].split(';')[1].split(':')[1]}">
             <div class="mec-user">${b.user}</div>
-            <div class="mec-date">${b.start} ~ ${b.end}</div>
+            <div class="mec-date">${b.start} ${b.startAmPm==='pm'?'오후':'오전'} ~ ${b.end} ${b.endAmPm==='am'?'오전':'오후'}</div>
             ${b.spec ? `<div class="mec-spec">${b.spec}</div>` : ''}
           </div>`).join('')}
         </div>`

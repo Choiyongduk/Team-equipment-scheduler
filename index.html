@@ -502,6 +502,25 @@ html, body {
   font-size: 12px; color: var(--amber);
 }
 
+/* ── 연구장비 추가 입력 필드 ── */
+.research-fields {
+  display: none;
+  background: #f0f7ff;
+  border: 1px solid rgba(37,99,235,0.2);
+  border-radius: var(--radius);
+  padding: 12px;
+  margin-bottom: 14px;
+}
+.research-fields.show { display: block; }
+.research-fields-title {
+  font-size: 11px; font-weight: 700; color: var(--accent);
+  text-transform: uppercase; letter-spacing: .5px;
+  margin-bottom: 10px; display: flex; align-items: center; gap: 6px;
+}
+.research-fields .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.research-fields .form-group { margin-bottom: 10px; }
+.research-fields .form-group:last-child { margin-bottom: 0; }
+
 /* 전용 장비 태그 */
 .dedicated-tag {
   font-size: 10px; color: var(--text3); font-style: italic;
@@ -737,6 +756,71 @@ html, body {
   .stats-chart-grid { grid-template-columns:1fr 1fr; }
 }
 
+/* ── 통계 서브탭 ── */
+.stats-subtab-bar {
+  display:flex; gap:0; border-bottom:2px solid var(--border2);
+  background:var(--bg2); padding:0 14px; flex-shrink:0;
+}
+.stats-subtab-btn {
+  padding:10px 16px; font-size:13px; font-weight:600;
+  font-family:var(--font); color:var(--text3);
+  background:none; border:none; cursor:pointer;
+  border-bottom:2px solid transparent; margin-bottom:-2px;
+  transition:color .15s, border-color .15s;
+}
+.stats-subtab-btn.active { color:var(--accent); border-bottom-color:var(--accent); }
+.stats-subtab-btn:hover:not(.active) { color:var(--text2); }
+.stats-subpanel { display:none; }
+.stats-subpanel.active { display:block; }
+
+/* ── 연구장비활용 테이블 ── */
+.rstat-toolbar {
+  display:flex; gap:8px; align-items:center; flex-wrap:wrap;
+  padding:12px 14px; border-bottom:1px solid var(--border); background:var(--bg2);
+}
+.rstat-toolbar select {
+  background:#fff; border:1px solid var(--border2); border-radius:8px;
+  color:var(--text); font-family:var(--font); font-size:12px; padding:7px 10px; outline:none;
+}
+.rstat-dl-btn {
+  display:flex; align-items:center; gap:5px;
+  background:var(--accent); color:#fff; border:none; border-radius:8px;
+  padding:7px 14px; font-size:12px; font-weight:700; font-family:var(--font);
+  cursor:pointer; transition:background .15s; white-space:nowrap; margin-left:auto;
+}
+.rstat-dl-btn:hover { background:var(--accent2); }
+.rstat-summary-row {
+  display:flex; gap:14px; flex-wrap:wrap;
+  padding:10px 14px; background:var(--bg3); border-bottom:1px solid var(--border);
+}
+.rstat-summary-item { display:flex; flex-direction:column; gap:2px; }
+.rstat-summary-item .k { font-size:10px; color:var(--text3); font-weight:600; text-transform:uppercase; letter-spacing:.5px; }
+.rstat-summary-item .v { font-size:16px; font-weight:800; color:var(--text); }
+.rstat-table-wrap { overflow-x:auto; -webkit-overflow-scrolling:touch; padding-bottom:20px; }
+.rstat-table { border-collapse:collapse; font-size:11px; white-space:nowrap; }
+.rstat-table th {
+  text-align:center; padding:8px 10px;
+  background:#1f4e79; color:#fff; font-weight:700;
+  border:1px solid #2e75b6; position:sticky; top:0; z-index:2;
+}
+.rstat-table th.equip-th { background:#2e75b6; text-align:left; min-width:160px; position:sticky; left:0; z-index:3; }
+.rstat-table td {
+  padding:7px 10px; border:1px solid var(--border2);
+  text-align:center; vertical-align:middle;
+}
+.rstat-table td.equip-td {
+  text-align:left; font-weight:600; background:#fff;
+  position:sticky; left:0; z-index:1; border-right:2px solid #2e75b6;
+}
+.rstat-table tr:nth-child(even) td:not(.equip-td) { background:#f7fbff; }
+.rstat-table tr:hover td:not(.equip-td) { background:#e8f3fc; }
+.rstat-table tr:hover .equip-td { background:#e8f3fc; }
+.rstat-table .total-row td { background:#e2efda; font-weight:700; color:#1a5c1a; border-top:2px solid #70ad47; }
+.rstat-table .total-row .equip-td { background:#e2efda; }
+.rstat-month-hdr { background:#2e75b6 !important; }
+.rstat-h-cnt { font-size:9px; opacity:.8; }
+
+
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -788,6 +872,7 @@ html, body {
     <button class="grp-btn" onclick="setGroup('내후환경시험실',this)" style="flex-shrink:0;padding:6px 14px;border-radius:20px;border:1px solid var(--border2);background:none;color:var(--text2);font-size:12px;cursor:pointer;white-space:nowrap;font-family:var(--font)">내후환경시험실</button>
     <button class="grp-btn" onclick="setGroup('내환경시험실',this)" style="flex-shrink:0;padding:6px 14px;border-radius:20px;border:1px solid var(--border2);background:none;color:var(--text2);font-size:12px;cursor:pointer;white-space:nowrap;font-family:var(--font)">내환경시험실</button>
     <button class="grp-btn" onclick="setGroup('염수분무시험실',this)" style="flex-shrink:0;padding:6px 14px;border-radius:20px;border:1px solid var(--border2);background:none;color:var(--text2);font-size:12px;cursor:pointer;white-space:nowrap;font-family:var(--font)">염수분무시험실</button>
+    <button class="grp-btn" onclick="setGroup('기타 시험실',this)" style="flex-shrink:0;padding:6px 14px;border-radius:20px;border:1px solid var(--border2);background:none;color:var(--text2);font-size:12px;cursor:pointer;white-space:nowrap;font-family:var(--font)">기타 시험실</button>
   </div>
 
   <!-- 현황표 고정 헤더 (.content 밖 → 세로스크롤과 완전 독립) -->
@@ -859,7 +944,7 @@ html, body {
         </div>
         <div class="form-group">
           <label class="form-label">장비 선택</label>
-          <select class="form-control" id="f-equip" onchange="checkConflict()">
+          <select class="form-control" id="f-equip" onchange="checkConflict();toggleResearchFields()">
             <option value="">선택하세요</option>
           </select>
         </div>
@@ -892,7 +977,83 @@ html, body {
           <label class="form-label">메모 (선택)</label>
           <input type="text" class="form-control" id="f-memo" placeholder="특이사항 입력">
         </div>
-        <button class="submit-btn" id="submit-btn" onclick="submitBooking()">예약 등록</button><button class="submit-btn" id="cancel-book-btn" onclick="cancelBookingForm()" style="display:none;background:#6b7280;margin-top:8px">취소</button>
+
+        <!-- 연구장비 활용 정보 토글 버튼 -->
+        <div id="research-toggle-wrap" style="display:none;margin-bottom:8px">
+          <button type="button" id="research-toggle-btn" onclick="manualToggleResearch()"
+            style="width:100%;padding:10px 14px;background:var(--bg3);border:1px dashed var(--border2);border-radius:var(--radius);font-size:13px;font-weight:600;color:var(--text2);cursor:pointer;text-align:left;display:flex;align-items:center;justify-content:space-between;font-family:var(--font);transition:all .15s">
+            <span>🔬 연구장비 활용 정보 입력</span>
+            <span id="research-toggle-icon" style="font-size:11px;color:var(--text3)">▼ 펼치기</span>
+          </button>
+        </div>
+
+        <!-- 연구장비 추가 입력 -->
+        <div class="research-fields" id="research-fields">
+          <div class="research-fields-title">🔬 연구장비 활용 정보</div>
+          <div class="form-group">
+            <label class="form-label">활용유형</label>
+            <select class="form-control" id="f-use-type" style="font-size:14px" onchange="syncResearchSubFields()">
+              <option value="외부">외부</option>
+              <option value="내부 타부서">내부 타부서</option>
+              <option value="자체활용">자체활용</option>
+            </select>
+          </div>
+          <div class="form-group" id="f-org-group">
+            <label class="form-label" id="f-org-label">기관/기업명</label>
+            <input type="text" class="form-control" id="f-org-name" placeholder="예: (주)삼원">
+          </div>
+          <div class="form-group" id="f-biz-group">
+            <label class="form-label">사업자등록번호</label>
+            <input type="text" class="form-control" id="f-biz-no" placeholder="숫자만 입력">
+          </div>
+          <div class="form-group" id="f-dept-group" style="display:none">
+            <label class="form-label">내부부서명</label>
+            <input type="text" class="form-control" id="f-dept-name" placeholder="예: 품질보증팀">
+          </div>
+          <div class="research-fields form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+            <div>
+              <label class="form-label">업종</label>
+              <input type="text" class="form-control" id="f-industry" placeholder="예: 자동차운송">
+            </div>
+            <div>
+              <label class="form-label">품목</label>
+              <input type="text" class="form-control" id="f-item" placeholder="예: 자동차">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">세부품목</label>
+            <input type="text" class="form-control" id="f-subitem" placeholder="예: 장치부품">
+          </div>
+          <div class="form-group">
+            <label class="form-label">제품명 / 시험번호</label>
+            <input type="text" class="form-control" id="f-product" placeholder="예: FOAM (W220-25-01020)">
+          </div>
+          <div class="research-fields form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+            <div>
+              <label class="form-label">시료수/시험수</label>
+              <input type="number" class="form-control" id="f-sample-count" placeholder="1" min="1">
+            </div>
+            <div>
+              <label class="form-label">사용료 (원)</label>
+              <input type="number" class="form-control" id="f-usage-fee" placeholder="0" min="0">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">세부지원공개여부</label>
+            <select class="form-control" id="f-support-pub" style="font-size:14px">
+              <option value="N">N (비공개)</option>
+              <option value="Y">Y (공개)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">세부지원내용</label>
+            <textarea class="form-control" id="f-support-detail" rows="2"
+              placeholder="· 지원개요:&#10;· 인증/인정/시험법:&#10;· 지원내용:"
+              style="resize:none;font-size:13px;line-height:1.5"></textarea>
+          </div>
+        </div>
+
+        <button class="submit-btn" id="submit-btn" onclick="submitBooking()">예약 등록</button><button class="submit-btn" id="delete-book-btn" onclick="confirmDeleteBooking()" style="display:none;background:var(--red);margin-top:8px">🗑 예약 삭제</button><button class="submit-btn" id="cancel-book-btn" onclick="cancelBookingForm()" style="display:none;background:#6b7280;margin-top:8px">취소</button>
       </div>
     </div>
 
@@ -910,86 +1071,113 @@ html, body {
 
     <!-- ══ 통계 ══ -->
     <div id="sec-stats" class="section">
-      <div class="stats-top">
-        <div>
-          <div class="stats-title">장비 통계</div>
-          <div class="stats-sub">가동률 · 예약률 · 저활용 장비 확인</div>
+
+      <!-- 서브탭 바 -->
+      <div class="stats-subtab-bar">
+        <button class="stats-subtab-btn active" onclick="switchStatsTab('booking',this)">📊 예약통계</button>
+        <button class="stats-subtab-btn" onclick="switchStatsTab('research',this)">🔬 연구장비활용</button>
+      </div>
+
+      <!-- 예약통계 패널 (기존 내용) -->
+      <div id="stats-panel-booking" class="stats-subpanel active">
+        <div class="stats-top">
+          <div>
+            <div class="stats-title">장비 통계</div>
+            <div class="stats-sub">가동률 · 예약률 · 저활용 장비 확인</div>
+          </div>
+          <div class="stats-top-actions">
+            <select id="stats-range" class="stats-select" onchange="renderStats()">
+              <option value="1m">최근 1개월</option>
+              <option value="3m" selected>최근 3개월</option>
+              <option value="6m">최근 6개월</option>
+              <option value="12m">최근 12개월</option>
+              <option value="ytd">올해 누적</option>
+              <option value="all">전체 기간</option>
+            </select>
+          </div>
         </div>
-        <div class="stats-top-actions">
-          <select id="stats-range" class="stats-select" onchange="renderStats()">
-            <option value="1m">최근 1개월</option>
-            <option value="3m" selected>최근 3개월</option>
-            <option value="6m">최근 6개월</option>
-            <option value="12m">최근 12개월</option>
-            <option value="ytd">올해 누적</option>
-            <option value="all">전체 기간</option>
+
+        <div class="pad stats-pad">
+          <div class="stats-grid" id="stats-summary-cards"></div>
+
+          <div class="stats-chart-grid">
+            <div class="card stats-card stats-chart-card">
+              <div class="stats-card-head" style="padding:0 0 12px">
+                <div>
+                  <div class="section-label" style="margin-bottom:4px">월별 예약 추이</div>
+                  <div class="stats-card-sub">최근 6개월 예약 건수</div>
+                </div>
+              </div>
+              <div class="stats-chart-wrap">
+                <canvas id="stats-booking-trend-chart"></canvas>
+              </div>
+            </div>
+
+            <div class="card stats-card stats-chart-card">
+              <div class="stats-card-head" style="padding:0 0 12px">
+                <div>
+                  <div class="section-label" style="margin-bottom:4px">상위 장비 가동률</div>
+                  <div class="stats-card-sub">가동률 상위 8대 비교</div>
+                </div>
+              </div>
+              <div class="stats-chart-wrap">
+                <canvas id="stats-util-chart"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <div class="stats-desktop-grid">
+            <div class="card stats-card">
+              <div class="stats-card-head">
+                <div>
+                  <div class="section-label" style="margin-bottom:4px">시험실별 평균 가동률</div>
+                  <div class="stats-card-sub">선택 기간 내 예약 일수 기준</div>
+                </div>
+              </div>
+              <div id="stats-group-list" class="stats-list"></div>
+            </div>
+
+            <div class="card stats-card">
+              <div class="stats-card-head">
+                <div>
+                  <div class="section-label" style="margin-bottom:4px">예약 건수 TOP 장비</div>
+                  <div class="stats-card-sub">가장 많이 예약된 장비 순</div>
+                </div>
+              </div>
+              <div id="stats-top-list" class="stats-list"></div>
+            </div>
+          </div>
+
+          <div class="card stats-card" style="margin-top:14px">
+            <div class="stats-card-head">
+              <div>
+                <div class="section-label" style="margin-bottom:4px">장비별 상세 통계</div>
+                <div class="stats-card-sub">가동률은 예약 일수 ÷ 기간 일수, 예약률은 예약 건수 비중</div>
+              </div>
+            </div>
+            <div class="stats-table-wrap">
+              <table class="stats-table" id="stats-table"></table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 연구장비활용 패널 -->
+      <div id="stats-panel-research" class="stats-subpanel">
+        <div class="rstat-toolbar">
+          <select id="rstat-year" onchange="renderResearchStats()"></select>
+          <select id="rstat-half" onchange="renderResearchStats()">
+            <option value="1">상반기 (1~6월)</option>
+            <option value="2">하반기 (7~12월)</option>
           </select>
+          <button class="rstat-dl-btn" onclick="exportResearchExcel()">⬇ 장비일지 추출</button>
+        </div>
+        <div id="rstat-summary" class="rstat-summary-row" style="display:none"></div>
+        <div class="rstat-table-wrap">
+          <div id="rstat-table-wrap"></div>
         </div>
       </div>
 
-      <div class="pad stats-pad">
-        <div class="stats-grid" id="stats-summary-cards"></div>
-
-        <div class="stats-chart-grid">
-          <div class="card stats-card stats-chart-card">
-            <div class="stats-card-head" style="padding:0 0 12px">
-              <div>
-                <div class="section-label" style="margin-bottom:4px">월별 예약 추이</div>
-                <div class="stats-card-sub">최근 6개월 예약 건수</div>
-              </div>
-            </div>
-            <div class="stats-chart-wrap">
-              <canvas id="stats-booking-trend-chart"></canvas>
-            </div>
-          </div>
-
-          <div class="card stats-card stats-chart-card">
-            <div class="stats-card-head" style="padding:0 0 12px">
-              <div>
-                <div class="section-label" style="margin-bottom:4px">상위 장비 가동률</div>
-                <div class="stats-card-sub">가동률 상위 8대 비교</div>
-              </div>
-            </div>
-            <div class="stats-chart-wrap">
-              <canvas id="stats-util-chart"></canvas>
-            </div>
-          </div>
-        </div>
-
-        <div class="stats-desktop-grid">
-          <div class="card stats-card">
-            <div class="stats-card-head">
-              <div>
-                <div class="section-label" style="margin-bottom:4px">시험실별 평균 가동률</div>
-                <div class="stats-card-sub">선택 기간 내 예약 일수 기준</div>
-              </div>
-            </div>
-            <div id="stats-group-list" class="stats-list"></div>
-          </div>
-
-          <div class="card stats-card">
-            <div class="stats-card-head">
-              <div>
-                <div class="section-label" style="margin-bottom:4px">예약 건수 TOP 장비</div>
-                <div class="stats-card-sub">가장 많이 예약된 장비 순</div>
-              </div>
-            </div>
-            <div id="stats-top-list" class="stats-list"></div>
-          </div>
-        </div>
-
-        <div class="card stats-card" style="margin-top:14px">
-          <div class="stats-card-head">
-            <div>
-              <div class="section-label" style="margin-bottom:4px">장비별 상세 통계</div>
-              <div class="stats-card-sub">가동률은 예약 일수 ÷ 기간 일수, 예약률은 예약 건수 비중</div>
-            </div>
-          </div>
-          <div class="stats-table-wrap">
-            <table class="stats-table" id="stats-table"></table>
-          </div>
-        </div>
-      </div>
     </div>
 
     <!-- ══ 현황표 ══ -->
@@ -1063,6 +1251,13 @@ html, body {
             <input type="radio" name="m-status" id="rs-broken" value="broken" class="status-radio">
             <label for="rs-broken" class="status-label">고장/폐기</label>
           </div>
+        </div>
+        <div class="form-group" style="margin-bottom:12px">
+          <label style="display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none">
+            <input type="checkbox" id="m-is-research" style="width:16px;height:16px;accent-color:var(--accent);cursor:pointer">
+            <span style="font-size:12px;font-weight:700;color:var(--accent)">🔬 연구장비 활용 대상</span>
+          </label>
+          <div style="font-size:11px;color:var(--text3);margin-top:4px;padding-left:24px">체크 시 예약 시 연구장비 활용 정보 입력란이 표시됩니다</div>
         </div>
         <button class="submit-btn" onclick="addEquipment()">장비 추가</button>
       </div>
@@ -1139,7 +1334,32 @@ html, body {
         <label class="form-label">고정조건</label>
         <input type="text" class="form-control" id="edit-equip-fixed-condition" style="font-size:14px">
       </div>
+      <div class="form-group" style="margin-bottom:14px">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;user-select:none">
+          <input type="checkbox" id="edit-equip-is-research" style="width:16px;height:16px;accent-color:var(--accent);cursor:pointer">
+          <span style="font-size:12px;font-weight:700;color:var(--accent)">🔬 연구장비 활용 대상</span>
+        </label>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px;padding-left:24px">체크 시 예약 시 연구장비 활용 정보 입력란이 표시됩니다</div>
+      </div>
       <button class="submit-btn" id="edit-equip-submit-btn" onclick="submitEditEquip()">수정 저장</button>
+    </div>
+  </div>
+</div>
+
+<!-- 예약 삭제 확인 모달 -->
+<div class="modal-overlay" id="delete-book-modal" onclick="closeDeleteBookModal(event)">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-header">
+      <div class="modal-title">예약 삭제</div>
+      <button class="modal-close" onclick="closeDeleteBookModalDirect()">✕</button>
+    </div>
+    <div class="modal-body" style="padding:20px 18px 8px">
+      <div style="font-size:22px;text-align:center;margin-bottom:12px">🗑</div>
+      <div id="delete-book-desc" style="font-size:14px;font-weight:600;color:var(--text);text-align:center;margin-bottom:6px"></div>
+      <div style="font-size:12px;color:var(--text3);text-align:center;margin-bottom:20px">삭제된 예약은 복구할 수 없습니다</div>
+      <button class="submit-btn" style="background:var(--red);margin-bottom:10px" onclick="executeDeleteBooking()">삭제 확인</button>
+      <button class="submit-btn" style="background:#6b7280" onclick="closeDeleteBookModalDirect()">취소</button>
     </div>
   </div>
 </div>
@@ -1316,6 +1536,9 @@ window.addEventListener('firebase-ready', async () => {
   toggleFixedConditionInput();
   window.bindTlClick();
 
+  // 연구장비 초기 등록 (없으면 자동 추가)
+  await ensureResearchEquipments();
+
   loading.classList.add('gone');
   setTimeout(() => {
     loading.style.display='none';
@@ -1445,7 +1668,7 @@ function renderEquipList() {
       return `<div class="equip-item" onclick="openEquipModal('${e.id}')">
         <div class="equip-dot" style="background:${DOT_COLORS[effStatus]||'#888'}"></div>
         <div class="equip-info">
-          <div class="equip-name">${e.name}</div>
+          <div class="equip-name">${e.name}${e.isResearchEquip ? ' <span style="font-size:9px;background:#ede9fe;color:#5b21b6;border-radius:10px;padding:1px 6px;font-weight:700">연구장비</span>' : ''}</div>
           <div class="equip-meta">${e.size||'—'} · ${e.mode||'—'}</div>
           <div class="equip-code">${e.code||'—'}</div>
           <div class="equip-cur">${cur}</div>
@@ -1605,7 +1828,7 @@ function renderTimeline() {
     days.push({ date: dt, dow: new Date(dt+'T00:00:00').getDay() });
   }
 
-  const groupOrder = ['내후환경시험실','내환경시험실','염수분무시험실'];
+  const groupOrder = ['내후환경시험실','내환경시험실','염수분무시험실','기타 시험실'];
   const showEquips = equipments
     .filter(e => e.status !== 'broken')
     .filter(e => activeGroup === 'all' || e.group === activeGroup)
@@ -1909,6 +2132,13 @@ function renderMgmt() {
     bdg.style.cssText = 'margin-left:6px;font-size:9px';
     bdg.textContent = STATUS_LABELS[e.status]||e.status;
     nameRow.appendChild(bdg);
+    if (e.isResearchEquip) {
+      const rbdg = document.createElement('span');
+      rbdg.className = 'badge';
+      rbdg.style.cssText = 'margin-left:4px;font-size:9px;background:#ede9fe;color:#5b21b6';
+      rbdg.textContent = '연구장비';
+      nameRow.appendChild(rbdg);
+    }
     const metaRow = document.createElement('div');
     metaRow.className = 'mgmt-item-meta';
     metaRow.textContent = (e.code||'-') + ' · ' + (e.size||'-');
@@ -2322,8 +2552,418 @@ function renderStats() {
 }
 
 // ═══════════════════════════════════════════════
-//  예약 로그
+//  연구장비활용 통계
 // ═══════════════════════════════════════════════
+
+// ── 연구장비 자동 등록 ──
+// code = 자산코드 (엑셀 시트탭명과 동일)
+const RESEARCH_EQUIPS = [
+  { name: '고도가속수명시험장치', code: 'PXXX-140007', group: '내후환경시험실' },
+  { name: '오염제거성능평가장비', code: 'BZZZ-180127', group: '기타 시험실'   },
+  { name: '강연도시험기',         code: 'BFCA-180008', group: '기타 시험실'   },
+  { name: '가속노화시험기',       code: 'BYQK-080013', group: '내후환경시험실' },
+  { name: '내마모시험기',         code: 'RFBA-020004', group: '기타 시험실'   },
+  { name: '회전피로시험기',       code: '2407-C-0114', group: '기타 시험실'   },
+];
+
+async function ensureResearchEquipments() {
+  for (const eq of RESEARCH_EQUIPS) {
+    const exists = equipments.find(e => e.code === eq.code);
+    if (!exists) {
+      try {
+        await fbFns.addDoc(fbFns.collection(db, 'equipments'), {
+          name: eq.name, code: eq.code, size: '', mode: '일정',
+          group: eq.group, status: 'available', fixedCondition: '',
+          isResearchEquip: true,
+          createdAt: fbFns.serverTimestamp()
+        });
+      } catch(e) { console.error('연구장비 등록 실패:', eq.name, e); }
+    } else {
+      // 플래그 또는 그룹이 다르면 업데이트
+      const needsUpdate = !exists.isResearchEquip || exists.group !== eq.group;
+      if (needsUpdate) {
+        try {
+          await fbFns.updateDoc(fbFns.doc(db, 'equipments', exists.id), {
+            isResearchEquip: true,
+            group: eq.group
+          });
+        } catch(e) { console.error('연구장비 업데이트 실패:', eq.name, e); }
+      }
+    }
+  }
+}
+
+function switchStatsTab(tab, btn) {
+  document.querySelectorAll('.stats-subtab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.stats-subpanel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('stats-panel-' + tab).classList.add('active');
+  if (tab === 'research') {
+    initRstatSelects();
+    renderResearchStats();
+  }
+}
+
+function initRstatSelects() {
+  const ySel = document.getElementById('rstat-year');
+  if (!ySel || ySel.options.length > 0) return;
+  const now = new Date();
+  const cur = now.getFullYear();
+  for (let y = cur - 2; y <= cur + 1; y++) {
+    const o = document.createElement('option');
+    o.value = y; o.textContent = y + '년';
+    if (y === cur) o.selected = true;
+    ySel.appendChild(o);
+  }
+  // 현재 반기 자동 선택
+  document.getElementById('rstat-half').value = now.getMonth() < 6 ? '1' : '2';
+}
+
+function getRstatRange() {
+  const year = parseInt(document.getElementById('rstat-year')?.value || new Date().getFullYear());
+  const half = parseInt(document.getElementById('rstat-half')?.value || 2);
+  const months = half === 1 ? [1,2,3,4,5,6] : [7,8,9,10,11,12];
+  const startM = months[0], endM = months[months.length-1];
+  const pad = n => String(n).padStart(2,'0');
+  const lastDay = new Date(year, endM, 0).getDate();
+  return {
+    year, half, months,
+    start: `${year}-${pad(startM)}-01`,
+    end:   `${year}-${pad(endM)}-${pad(lastDay)}`,
+    label: `${year}년 ${half===1?'상반기':'하반기'}`
+  };
+}
+
+function getResearchData() {
+  const range = getRstatRange();
+  // 해당 기간 예약만 필터
+  const filtered = bookings.filter(b =>
+    b.start <= range.end && b.end >= range.start
+  );
+
+  // 연구장비만 (isResearchEquip 플래그 또는 자산코드 매칭)
+  const researchCodes = new Set(RESEARCH_EQUIPS.map(e => e.code));
+  const equipList = equipments
+    .filter(e => e.isResearchEquip || researchCodes.has(e.code))
+    .filter(e => e.status !== 'broken')
+    .slice().sort((a,b) => {
+      const ga = ['내후환경시험실','내환경시험실','염수분무시험실','기타 시험실'].indexOf(a.group||'');
+      const gb = ['내후환경시험실','내환경시험실','염수분무시험실','기타 시험실'].indexOf(b.group||'');
+      return (ga===-1?99:ga) - (gb===-1?99:gb) || a.name.localeCompare(b.name,'ko');
+    });
+
+  const rows = equipList.map(eq => {
+    const eqBooks = filtered.filter(b => b.equipId === eq.id);
+    const monthData = {};
+    let totalCnt = 0, totalDays = 0;
+
+    range.months.forEach(m => {
+      const pad = n => String(n).padStart(2,'0');
+      const mStart = `${range.year}-${pad(m)}-01`;
+      const lastD = new Date(range.year, m, 0).getDate();
+      const mEnd   = `${range.year}-${pad(m)}-${pad(lastD)}`;
+      const mBooks = eqBooks.filter(b => b.start <= mEnd && b.end >= mStart);
+      // 해당 월 내 실제 겹치는 일수 합산
+      let days = 0;
+      mBooks.forEach(b => {
+        const s = b.start < mStart ? mStart : b.start;
+        const e = b.end   > mEnd   ? mEnd   : b.end;
+        days += daysBetweenInclusive(s, e);
+      });
+      monthData[m] = { cnt: mBooks.length, days };
+      totalCnt  += mBooks.length;
+      totalDays += days;
+    });
+
+    // 가동률: 총 예약일수 / 기간 전체일수
+    const periodDays = daysBetweenInclusive(range.start, range.end);
+    const util = periodDays > 0 ? (totalDays / periodDays * 100) : 0;
+
+    return { eq, monthData, totalCnt, totalDays, util };
+  });
+
+  return { range, rows };
+}
+
+function renderResearchStats() {
+  initRstatSelects();
+  const { range, rows } = getResearchData();
+
+  // 요약
+  const sumEl = document.getElementById('rstat-summary');
+  const totalCnt  = rows.reduce((s,r) => s + r.totalCnt,  0);
+  const totalDays = rows.reduce((s,r) => s + r.totalDays, 0);
+  const avgUtil   = rows.length ? rows.reduce((s,r) => s + r.util, 0) / rows.length : 0;
+  const activeEq  = rows.filter(r => r.totalCnt > 0).length;
+
+  sumEl.style.display = 'flex';
+  sumEl.innerHTML = `
+    <div class="rstat-summary-item"><div class="k">기간</div><div class="v" style="font-size:13px">${range.label}</div></div>
+    <div class="rstat-summary-item"><div class="k">총 활용건수</div><div class="v">${totalCnt}건</div></div>
+    <div class="rstat-summary-item"><div class="k">총 활용일수</div><div class="v">${totalDays}일</div></div>
+    <div class="rstat-summary-item"><div class="k">평균 가동률</div><div class="v">${avgUtil.toFixed(1)}%</div></div>
+    <div class="rstat-summary-item"><div class="k">활용 장비</div><div class="v">${activeEq}대</div></div>
+  `;
+
+  // 테이블 생성
+  const MONTH_KR = {1:'1월',2:'2월',3:'3월',4:'4월',5:'5월',6:'6월',
+                    7:'7월',8:'8월',9:'9월',10:'10월',11:'11월',12:'12월'};
+  let html = `<table class="rstat-table">
+    <thead>
+      <tr>
+        <th class="equip-th" rowspan="2">장비명</th>
+        ${range.months.map(m => `<th colspan="2" class="rstat-month-hdr">${MONTH_KR[m]}</th>`).join('')}
+        <th colspan="3">합 계</th>
+      </tr>
+      <tr>
+        ${range.months.map(() => '<th>건수</th><th>일수</th>').join('')}
+        <th>건수</th><th>일수</th><th>가동률</th>
+      </tr>
+    </thead>
+    <tbody>`;
+
+  let totCols = range.months.map(() => ({ cnt:0, days:0 }));
+  let grandCnt = 0, grandDays = 0;
+
+  rows.forEach(r => {
+    const util = r.util;
+    const utilColor = util >= 70 ? '#1a5c1a' : util >= 40 ? '#833c00' : util > 0 ? '#1f4e79' : '#999';
+    html += `<tr>
+      <td class="equip-td">${r.eq.name}</td>
+      ${range.months.map((m, mi) => {
+        const d = r.monthData[m];
+        totCols[mi].cnt  += d.cnt;
+        totCols[mi].days += d.days;
+        return `<td>${d.cnt > 0 ? d.cnt : '<span style="color:#ccc">—</span>'}</td>
+                <td>${d.days > 0 ? d.days : '<span style="color:#ccc">—</span>'}</td>`;
+      }).join('')}
+      <td><strong>${r.totalCnt > 0 ? r.totalCnt : '—'}</strong></td>
+      <td><strong>${r.totalDays > 0 ? r.totalDays : '—'}</strong></td>
+      <td style="color:${utilColor};font-weight:700">${r.totalDays > 0 ? util.toFixed(1)+'%' : '—'}</td>
+    </tr>`;
+    grandCnt  += r.totalCnt;
+    grandDays += r.totalDays;
+  });
+
+  const periodDays = daysBetweenInclusive(range.start, range.end);
+  const grandUtil  = periodDays > 0 ? (grandDays / periodDays / rows.length * 100) : 0;
+
+  html += `<tr class="total-row">
+    <td class="equip-td">합 계</td>
+    ${totCols.map(t => `<td>${t.cnt}</td><td>${t.days}</td>`).join('')}
+    <td>${grandCnt}</td><td>${grandDays}</td>
+    <td>${grandUtil.toFixed(1)}%</td>
+  </tr>`;
+
+  html += '</tbody></table>';
+  document.getElementById('rstat-table-wrap').innerHTML = html;
+}
+
+function exportResearchExcel() {
+  if (typeof XLSX === 'undefined') { showToast('엑셀 라이브러리 로딩 중입니다', 'error'); return; }
+  const { range, rows } = getResearchData();
+  const researchCodes = new Set(RESEARCH_EQUIPS.map(e => e.code));
+
+  const targetEquips = equipments
+    .filter(e => e.isResearchEquip || researchCodes.has(e.code))
+    .filter(e => e.status !== 'broken');
+
+  const periodBookings = bookings.filter(b => b.start <= range.end && b.end >= range.start);
+
+  const wb = XLSX.utils.book_new();
+
+  // ── 시트1: 전체 요약 ──────────────────────────────────────
+  const MONTH_KR = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+
+  const summaryData = [];
+  // 제목 행
+  summaryData.push([`연구장비 활용 현황 (${range.label})`]);
+  summaryData.push([`추출일: ${new Date().toLocaleDateString('ko-KR')}`, null, null, null, null, null, null, null, null, null, `총 활용건수: ${rows.reduce((s,r)=>s+r.totalCnt,0)}건`, `총 활용일수: ${rows.reduce((s,r)=>s+r.totalDays,0)}일`]);
+  summaryData.push([]); // 빈 행
+
+  // 헤더
+  const summaryHeader = ['장비명', '장비코드'];
+  range.months.forEach(m => {
+    summaryHeader.push(MONTH_KR[m-1] + ' 건수');
+    summaryHeader.push(MONTH_KR[m-1] + ' 일수');
+  });
+  summaryHeader.push('합계 건수', '합계 일수', '가동률(%)');
+  summaryData.push(summaryHeader);
+
+  rows.forEach(r => {
+    const row = [r.eq.name, r.eq.code || ''];
+    range.months.forEach(m => {
+      const d = r.monthData[m];
+      row.push(d.cnt || 0);
+      row.push(d.days || 0);
+    });
+    row.push(r.totalCnt);
+    row.push(r.totalDays);
+    row.push(r.totalDays > 0 ? parseFloat(r.util.toFixed(1)) : 0);
+    summaryData.push(row);
+  });
+
+  // 합계 행
+  const totalRow = ['합 계', ''];
+  const grandMonthlyCnt  = range.months.map(m => rows.reduce((s,r) => s + (r.monthData[m]?.cnt  || 0), 0));
+  const grandMonthlyDays = range.months.map(m => rows.reduce((s,r) => s + (r.monthData[m]?.days || 0), 0));
+  range.months.forEach((_,i) => { totalRow.push(grandMonthlyCnt[i]); totalRow.push(grandMonthlyDays[i]); });
+  const gCnt  = rows.reduce((s,r) => s + r.totalCnt,  0);
+  const gDays = rows.reduce((s,r) => s + r.totalDays, 0);
+  const gUtil = rows.length ? parseFloat((rows.reduce((s,r) => s + r.util, 0) / rows.length).toFixed(1)) : 0;
+  totalRow.push(gCnt, gDays, gUtil);
+  summaryData.push(totalRow);
+
+  const wsSummary = XLSX.utils.aoa_to_sheet(summaryData);
+
+  // 요약 시트 열 너비
+  const summaryColWidths = [{ wch: 30 }, { wch: 16 }];
+  range.months.forEach(() => { summaryColWidths.push({ wch: 10 }); summaryColWidths.push({ wch: 10 }); });
+  summaryColWidths.push({ wch: 12 }, { wch: 12 }, { wch: 12 });
+  wsSummary['!cols'] = summaryColWidths;
+
+  // 병합: 제목
+  wsSummary['!merges'] = [{ s:{r:0,c:0}, e:{r:0,c:summaryHeader.length-1} }];
+
+  XLSX.utils.book_append_sheet(wb, wsSummary, '📊 전체요약');
+
+  // ── 시트2: 활용 상세 내역 ──────────────────────────────────
+  const detailData = [];
+  detailData.push([`연구장비 활용 상세 내역 (${range.label})`]);
+  detailData.push([]);
+
+  const detailHeader = [
+    'No', '장비명', '장비코드', '예약자',
+    '활용유형', '기관/기업명', '사업자등록번호', '내부부서명',
+    '업종', '품목', '세부품목', '제품명/시험번호',
+    '시료수/시험수', '사용시작일', '사용종료일', '사용일수',
+    '사용료(원)', '세부지원공개여부', '시험규격', '세부지원내용', '메모'
+  ];
+  detailData.push(detailHeader);
+
+  let rowNo = 1;
+  targetEquips.forEach(eq => {
+    const eqBooks = periodBookings
+      .filter(b => b.equipId === eq.id)
+      .sort((a, b) => a.start.localeCompare(b.start));
+
+    eqBooks.forEach(b => {
+      const days = daysBetweenInclusive(
+        b.start < range.start ? range.start : b.start,
+        b.end   > range.end   ? range.end   : b.end
+      );
+      detailData.push([
+        rowNo++,
+        eq.name,
+        eq.code || '',
+        b.user || '',
+        b.useType || '',
+        b.orgName || '',
+        b.bizNo ? String(b.bizNo).replace(/-/g,'') : '',
+        b.deptName || '',
+        b.industry || '',
+        b.item || '',
+        b.subItem || '',
+        b.product || b.spec || '',
+        b.sampleCount ? Number(b.sampleCount) : '',
+        b.start,
+        b.end,
+        days,
+        b.usageFee ? Number(b.usageFee) : 0,
+        b.supportPub || 'N',
+        b.spec || '',
+        b.supportDetail || '',
+        b.memo || ''
+      ]);
+    });
+  });
+
+  if (rowNo === 1) {
+    detailData.push(['해당 기간에 활용 내역이 없습니다.']);
+  }
+
+  const wsDetail = XLSX.utils.aoa_to_sheet(detailData);
+  wsDetail['!cols'] = [
+    {wch:5},{wch:28},{wch:16},{wch:10},
+    {wch:12},{wch:20},{wch:16},{wch:14},
+    {wch:12},{wch:12},{wch:14},{wch:22},
+    {wch:13},{wch:13},{wch:13},{wch:10},
+    {wch:12},{wch:18},{wch:36},{wch:16}
+  ];
+  wsDetail['!merges'] = [{ s:{r:0,c:0}, e:{r:0,c:19} }];
+  XLSX.utils.book_append_sheet(wb, wsDetail, '📋 활용 상세내역');
+
+  // ── 시트3~: 장비별 개별 시트 ──────────────────────────────
+  targetEquips.forEach(eq => {
+    const eqBooks = periodBookings
+      .filter(b => b.equipId === eq.id)
+      .sort((a, b) => a.start.localeCompare(b.start));
+
+    const wsData = [];
+    wsData.push([`${eq.name} — 활용 일지 (${range.label})`]);
+    wsData.push([`장비코드: ${eq.code || '—'}`, null, null, null, `총 활용: ${eqBooks.length}건`]);
+    wsData.push([]);
+
+    wsData.push(['No', '예약자', '활용유형', '기관/기업명', '내부부서명', '제품명/시험번호', '시료수', '사용 시작', '사용 종료', '일수', '사용료(원)', '공개여부', '세부지원내용', '메모']);
+
+    if (eqBooks.length === 0) {
+      wsData.push([null, '해당 기간 활용 내역 없음']);
+    } else {
+      eqBooks.forEach((b, i) => {
+        const days = daysBetweenInclusive(
+          b.start < range.start ? range.start : b.start,
+          b.end   > range.end   ? range.end   : b.end
+        );
+        wsData.push([
+          i + 1,
+          b.user || '',
+          b.useType || '',
+          b.orgName || '',
+          b.deptName || '',
+          b.product || b.spec || '',
+          b.sampleCount ? Number(b.sampleCount) : '',
+          b.start,
+          b.end,
+          days,
+          b.usageFee ? Number(b.usageFee) : 0,
+          b.supportPub || 'N',
+          b.supportDetail || '',
+          b.memo || ''
+        ]);
+      });
+
+      // 합계 행
+      const totalDays = eqBooks.reduce((s, b) => {
+        return s + daysBetweenInclusive(
+          b.start < range.start ? range.start : b.start,
+          b.end   > range.end   ? range.end   : b.end
+        );
+      }, 0);
+      const totalFee = eqBooks.reduce((s, b) => s + (Number(b.usageFee) || 0), 0);
+      wsData.push([null, null, null, null, null, null, null, '합 계', totalDays, totalFee, null, null]);
+    }
+
+    const ws = XLSX.utils.aoa_to_sheet(wsData);
+    ws['!cols'] = [
+      {wch:5},{wch:10},{wch:12},{wch:22},{wch:22},{wch:8},
+      {wch:13},{wch:13},{wch:7},{wch:12},{wch:36},{wch:16}
+    ];
+    ws['!merges'] = [{ s:{r:0,c:0}, e:{r:0,c:11} }];
+
+    const sheetName = (eq.code || eq.name).substring(0, 31);
+    XLSX.utils.book_append_sheet(wb, ws, sheetName);
+  });
+
+  if (wb.SheetNames.length === 0) {
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([['데이터 없음']]), '없음');
+  }
+
+  const fname = `연구장비_활용일지_${range.year}_${range.half === 1 ? '상반기' : '하반기'}.xlsx`;
+  XLSX.writeFile(wb, fname);
+  showToast(`${range.label} 장비일지 추출 완료! (${targetEquips.length}개 장비)`, 'success');
+}
+
+
 function initLogSelects() {
   const yearSel = document.getElementById('log-year');
   if (!yearSel || yearSel.options.length > 0) return;
@@ -2472,11 +3112,61 @@ function switchTab(t) {
   if (tlHdr) tlHdr.style.display = (t === 'timeline') ? 'flex' : 'none';
   renderAll();
   if (t === 'timeline') setTimeout(() => renderTimeline(), 100);
+  if (t === 'book') toggleResearchFields();
 }
 
 function onUserChange() {
   const v = document.getElementById('f-user').value;
   document.getElementById('custom-user-group').style.display = v==='직접입력' ? 'block' : 'none';
+}
+
+let _researchManualOpen = false;
+
+function manualToggleResearch() {
+  _researchManualOpen = !_researchManualOpen;
+  applyResearchVisibility(_researchManualOpen);
+}
+
+function applyResearchVisibility(show) {
+  const rf  = document.getElementById('research-fields');
+  const btn = document.getElementById('research-toggle-btn');
+  const ico = document.getElementById('research-toggle-icon');
+  if (rf)  rf.classList.toggle('show', show);
+  if (ico) ico.textContent = show ? '▲ 접기' : '▼ 펼치기';
+  if (btn) {
+    btn.style.background  = show ? 'var(--accent-dim)' : 'var(--bg3)';
+    btn.style.borderColor = show ? 'rgba(37,99,235,0.3)' : 'var(--border2)';
+    btn.style.color       = show ? 'var(--accent)' : 'var(--text2)';
+    btn.style.borderStyle = show ? 'solid' : 'dashed';
+  }
+  if (show) syncResearchSubFields();
+}
+
+function syncResearchSubFields() {
+  const useType = document.getElementById('f-use-type')?.value || '외부';
+  const isExt   = useType === '외부';
+  const isIntra = useType === '내부 타부서';
+  const og = document.getElementById('f-org-group');
+  const bg = document.getElementById('f-biz-group');
+  const dg = document.getElementById('f-dept-group');
+  if (og) og.style.display = isExt   ? 'block' : 'none';
+  if (bg) bg.style.display = isExt   ? 'block' : 'none';
+  if (dg) dg.style.display = isIntra ? 'block' : 'none';
+}
+
+function toggleResearchFields() {
+  const equipId = document.getElementById('f-equip').value;
+  const eq = equipments.find(e => e.id === equipId);
+  const isResearch = eq && (eq.isResearchEquip || new Set(RESEARCH_EQUIPS.map(r=>r.code)).has(eq.code));
+  const toggleWrap = document.getElementById('research-toggle-wrap');
+  if (toggleWrap) toggleWrap.style.display = isResearch ? 'block' : 'none';
+  if (!isResearch) {
+    _researchManualOpen = false;
+    applyResearchVisibility(false);
+  } else {
+    // 연구장비면 현재 수동 상태(_researchManualOpen) 그대로 반영
+    applyResearchVisibility(_researchManualOpen);
+  }
 }
 
 function checkConflict() {
@@ -2546,10 +3236,30 @@ function startBookingEdit(bookingId) {
   if (sa) sa.value = b.startAmPm || 'am';
   if (ea) ea.value = b.endAmPm   || 'pm';
   document.getElementById('f-memo').value  = b.memo    || '';
+  // 연구장비 필드 복원
+  const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
+  setVal('f-use-type',       b.useType       || '외부');
+  setVal('f-org-name',       b.orgName       || '');
+  setVal('f-biz-no',         b.bizNo         || '');
+  setVal('f-dept-name',      b.deptName      || '');
+  setVal('f-industry',       b.industry      || '');
+  setVal('f-item',           b.item          || '');
+  setVal('f-subitem',        b.subItem       || '');
+  setVal('f-product',        b.product       || '');
+  setVal('f-sample-count',   b.sampleCount   || '');
+  setVal('f-usage-fee',      b.usageFee      || '');
+  setVal('f-support-pub',    b.supportPub    || 'N');
+  setVal('f-support-detail', b.supportDetail || '');
+  // 연구장비 데이터가 있으면 섹션 열기
+  const hasResearchData = !!(b.useType || b.orgName || b.deptName || b.industry || b.product || b.supportDetail);
+  if (hasResearchData) _researchManualOpen = true;
+  toggleResearchFields();
   const sb = document.getElementById('submit-btn');
   const cb = document.getElementById('cancel-book-btn');
   if (sb) sb.textContent = '예약 수정 저장';
   if (cb) { cb.textContent = '취소'; cb.style.display = 'block'; }
+  const db2 = document.getElementById('delete-book-btn');
+  if (db2) db2.style.display = 'block';
   checkConflict();
 }
 
@@ -2567,10 +3277,18 @@ function resetBookingForm() {
   if (sa) sa.value = 'am';
   if (ea) ea.value = 'pm';
   document.getElementById('f-memo').value  = '';
+  // 연구장비 필드 초기화
+  const clearIds = ['f-use-type','f-org-name','f-biz-no','f-dept-name','f-industry','f-item',
+                    'f-subitem','f-product','f-sample-count','f-usage-fee','f-support-pub','f-support-detail'];
+  clearIds.forEach(id => { const el = document.getElementById(id); if (el) el.value = id==='f-use-type'?'외부':id==='f-support-pub'?'N':''; });
+  _researchManualOpen = false;
+  applyResearchVisibility(false);
   const sb = document.getElementById('submit-btn');
   const cb = document.getElementById('cancel-book-btn');
   if (sb) sb.textContent = '예약 등록';
   if (cb) cb.style.display = 'none';
+  const db2 = document.getElementById('delete-book-btn');
+  if (db2) db2.style.display = 'none';
   document.getElementById('conflict-warning').style.display = 'none';
 }
 
@@ -2590,6 +3308,24 @@ async function submitBooking() {
   const startAmPm = document.getElementById('f-start-ampm')?.value || 'am';
   const endAmPm   = document.getElementById('f-end-ampm')?.value   || 'pm';
   const memo      = document.getElementById('f-memo').value.trim();
+
+  // 연구장비 추가 필드
+  const eq = equipments.find(e => e.id === equipId);
+  const isResearch = eq && (eq.isResearchEquip || new Set(RESEARCH_EQUIPS.map(r=>r.code)).has(eq.code));
+  const researchData = isResearch ? {
+    useType:       document.getElementById('f-use-type')?.value || '',
+    orgName:       document.getElementById('f-org-name')?.value.trim() || '',
+    bizNo:         document.getElementById('f-biz-no')?.value.trim() || '',
+    deptName:      document.getElementById('f-dept-name')?.value.trim() || '',
+    industry:      document.getElementById('f-industry')?.value.trim() || '',
+    item:          document.getElementById('f-item')?.value.trim() || '',
+    subItem:       document.getElementById('f-subitem')?.value.trim() || '',
+    product:       document.getElementById('f-product')?.value.trim() || '',
+    sampleCount:   parseInt(document.getElementById('f-sample-count')?.value) || 0,
+    usageFee:      parseInt(document.getElementById('f-usage-fee')?.value) || 0,
+    supportPub:    document.getElementById('f-support-pub')?.value || 'N',
+    supportDetail: document.getElementById('f-support-detail')?.value.trim() || '',
+  } : {};
 
   if (!user || !equipId || !start || !end) { showToast('필수 항목을 모두 입력해주세요', 'error'); return; }
   if (end < start || (end === start && toHalf(start, startAmPm) > toHalf(end, endAmPm))) {
@@ -2612,17 +3348,15 @@ async function submitBooking() {
   btn.textContent = editingBookingId ? '수정 중...' : '등록 중...';
 
   try {
+    const payload = { user, equipId, spec, start, end, startAmPm, endAmPm, memo, ...researchData };
     if (editingBookingId) {
-      await fbFns.updateDoc(fbFns.doc(db, 'bookings', editingBookingId), {
-        user, equipId, spec, start, end, startAmPm, endAmPm, memo
-      });
+      await fbFns.updateDoc(fbFns.doc(db, 'bookings', editingBookingId), payload);
       showToast('예약이 수정되었습니다!', 'success');
       resetBookingForm();
       switchTab('timeline');
     } else {
       await fbFns.addDoc(fbFns.collection(db, 'bookings'), {
-        user, equipId, spec, start, end, startAmPm, endAmPm, memo,
-        createdAt: fbFns.serverTimestamp()
+        ...payload, createdAt: fbFns.serverTimestamp()
       });
       showToast('예약이 등록되었습니다!', 'success');
       resetBookingForm();
@@ -2648,6 +3382,37 @@ async function deleteBooking(id, user) {
   }
 }
 
+// 예약 폼에서 삭제 버튼 클릭 시 확인 모달 오픈
+function confirmDeleteBooking() {
+  if (!editingBookingId) return;
+  const b = bookings.find(x => x.id === editingBookingId);
+  if (!b) return;
+  const eq = equipments.find(e => e.id === b.equipId);
+  const desc = document.getElementById('delete-book-desc');
+  if (desc) desc.textContent = `${b.user} · ${eq ? eq.name : '장비'} (${b.start} ~ ${b.end})`;
+  document.getElementById('delete-book-modal').classList.add('open');
+}
+
+async function executeDeleteBooking() {
+  if (!editingBookingId) return;
+  try {
+    await fbFns.deleteDoc(fbFns.doc(db, 'bookings', editingBookingId));
+    showToast('예약이 삭제되었습니다', 'success');
+    closeDeleteBookModalDirect();
+    resetBookingForm();
+    switchTab('timeline');
+  } catch(err) {
+    showToast('삭제에 실패했습니다', 'error');
+  }
+}
+
+function closeDeleteBookModal(e) {
+  if (e.target === document.getElementById('delete-book-modal')) closeDeleteBookModalDirect();
+}
+function closeDeleteBookModalDirect() {
+  document.getElementById('delete-book-modal').classList.remove('open');
+}
+
 async function addEquipment() {
   const name   = document.getElementById('m-name').value.trim();
   const code   = document.getElementById('m-code').value.trim();
@@ -2655,6 +3420,7 @@ async function addEquipment() {
   const mode   = document.getElementById('m-mode').value.trim();
   const status = document.querySelector('input[name="m-status"]:checked').value;
   const fixedCondition = document.getElementById('m-fixed-condition')?.value.trim() || '';
+  const isResearchEquip = document.getElementById('m-is-research')?.checked || false;
 
   if (!name) { showToast('장비명을 입력해주세요', 'error'); return; }
   if (status === 'fixed' && !fixedCondition) { showToast('전용장비는 고정조건을 입력해주세요', 'error'); return; }
@@ -2663,6 +3429,7 @@ async function addEquipment() {
     const docRef = await fbFns.addDoc(fbFns.collection(db, 'equipments'), {
       name, code, size, mode, status,
       fixedCondition: status === 'fixed' ? fixedCondition : '',
+      isResearchEquip,
       createdAt: fbFns.serverTimestamp()
     });
 
@@ -2675,6 +3442,8 @@ async function addEquipment() {
       const el = document.getElementById(id);
       if (el) el.value='';
     });
+    const rc = document.getElementById('m-is-research');
+    if (rc) rc.checked = false;
     document.getElementById('rs-available').checked = true;
     toggleFixedConditionInput();
   } catch(err) {
@@ -2777,6 +3546,8 @@ function openEditEquipModal(id) {
   document.getElementById('edit-equip-fixed-condition').value = eq.fixedCondition || '';
   const fcGroup = document.getElementById('edit-fixed-condition-group');
   if (fcGroup) fcGroup.style.display = eq.status === 'fixed' ? 'block' : 'none';
+  const rc = document.getElementById('edit-equip-is-research');
+  if (rc) rc.checked = !!eq.isResearchEquip;
   document.getElementById('edit-equip-modal-overlay').classList.add('open');
 }
 function closeEditEquipModal(e) {
@@ -2793,12 +3564,13 @@ async function submitEditEquip() {
   const size = document.getElementById('edit-equip-size').value.trim();
   const mode = document.getElementById('edit-equip-mode').value.trim();
   const fixedCondition = document.getElementById('edit-equip-fixed-condition').value.trim();
+  const isResearchEquip = document.getElementById('edit-equip-is-research')?.checked || false;
   if (!name) { showToast('장비명을 입력해주세요', 'error'); return; }
   const btn = document.getElementById('edit-equip-submit-btn');
   btn.disabled = true; btn.textContent = '저장 중...';
   try {
     const eq = equipments.find(e => e.id === _editingEquipId);
-    const payload = { name, code, size, mode };
+    const payload = { name, code, size, mode, isResearchEquip };
     if (eq && eq.status === 'fixed') payload.fixedCondition = fixedCondition;
     await fbFns.updateDoc(fbFns.doc(db, 'equipments', _editingEquipId), payload);
     showToast('장비 정보가 수정되었습니다', 'success');

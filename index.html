@@ -1053,7 +1053,11 @@ html, body {
           </div>
         </div>
 
-        <button class="submit-btn" id="submit-btn" onclick="submitBooking()">예약 등록</button><button class="submit-btn" id="delete-book-btn" onclick="confirmDeleteBooking()" style="display:none;background:var(--red);margin-top:8px">🗑 예약 삭제</button><button class="submit-btn" id="cancel-book-btn" onclick="cancelBookingForm()" style="display:none;background:#6b7280;margin-top:8px">취소</button>
+        <button class="submit-btn" id="submit-btn" onclick="submitBooking()">예약 등록</button>
+        <div id="edit-book-btns" style="display:none;flex-direction:row;gap:8px;margin-top:8px">
+          <button class="submit-btn" id="delete-book-btn" onclick="confirmDeleteBooking()" style="background:var(--red);flex:1;margin-top:0;padding:13px 4px;font-size:13px">🗑 삭제</button>
+          <button class="submit-btn" id="cancel-book-btn" onclick="cancelBookingForm()" style="background:#6b7280;flex:1;margin-top:0;padding:13px 4px;font-size:13px">취소</button>
+        </div>
       </div>
     </div>
 
@@ -3259,10 +3263,9 @@ function startBookingEdit(bookingId) {
   toggleResearchFields();
   const sb = document.getElementById('submit-btn');
   const cb = document.getElementById('cancel-book-btn');
-  if (sb) sb.textContent = '예약 수정 저장';
-  if (cb) { cb.textContent = '취소'; cb.style.display = 'block'; }
-  const db2 = document.getElementById('delete-book-btn');
-  if (db2) db2.style.display = 'block';
+  if (sb) { sb.textContent = '예약 수정 저장'; sb.style.borderRadius = 'var(--radius) var(--radius) 0 0'; }
+  const editBtns = document.getElementById('edit-book-btns');
+  if (editBtns) editBtns.style.display = 'flex';
   checkConflict();
 }
 
@@ -3288,10 +3291,9 @@ function resetBookingForm() {
   applyResearchVisibility(false);
   const sb = document.getElementById('submit-btn');
   const cb = document.getElementById('cancel-book-btn');
-  if (sb) sb.textContent = '예약 등록';
-  if (cb) cb.style.display = 'none';
-  const db2 = document.getElementById('delete-book-btn');
-  if (db2) db2.style.display = 'none';
+  if (sb) { sb.textContent = '예약 등록'; sb.style.borderRadius = 'var(--radius)'; }
+  const editBtns = document.getElementById('edit-book-btns');
+  if (editBtns) editBtns.style.display = 'none';
   document.getElementById('conflict-warning').style.display = 'none';
 }
 

@@ -541,7 +541,7 @@ html, body {
   text-align: center; padding: 4px 0 2px; min-width: 44px;
   font-size: 10px; font-weight: 700; color: var(--text3);
   border-bottom: 1px solid var(--border2);
-  border-right: 1px solid var(--border);
+  border-right: 1.5px solid rgba(30,40,80,0.22);
   background: #f1f5f9;
   position: sticky; top: 0; z-index: 20;
 }
@@ -549,9 +549,17 @@ html, body {
   text-align: center; padding: 2px 0; min-width: 22px;
   font-size: 9px; font-weight: 600; color: var(--text3);
   border-bottom: 1px solid var(--border2);
-  border-right: 0.5px solid var(--border);
-  background: #f8fafc;
   position: sticky; top: 26px; z-index: 19;
+}
+/* 오전 헤더 — 밝은 배경 */
+.tl-ampm-header.am-hdr {
+  background: #f1f5f9;
+  border-right: 0.5px solid rgba(30,40,80,0.10);
+}
+/* 오후 헤더 — 약간 어두운 배경 + 날짜 경계 굵은 선 */
+.tl-ampm-header.pm-hdr {
+  background: #e8ecf2;
+  border-right: 1.5px solid rgba(30,40,80,0.22);
 }
 .tl-day-header.today-h { color: var(--accent); background: #eef5ff; }
 .tl-day-header.sat-h { color: var(--blue); }
@@ -567,8 +575,21 @@ html, body {
   overflow: visible;
 }
 /* 오전/오후 구분선 - 오전(AM) 셀 오른쪽에 더 진한 선 */
-.tl-cell.am-cell { border-right: 0.5px solid var(--border); }
-.tl-cell.pm-cell { border-right: 1px solid var(--border2); }
+/* 오전 셀 — 약간 밝은 배경 */
+.tl-cell.am-cell { border-right: 0.5px solid rgba(30,40,80,0.10); background-color: #fafbfc; }
+/* 오후 셀 — 날짜 오른쪽 경계선을 굵고 진하게 */
+.tl-cell.pm-cell { border-right: 1.5px solid rgba(30,40,80,0.20); background-color: #f4f5f8; }
+/* 예약된 셀은 배경색이 덮어씀 */
+.tl-cell.am-cell.booked,
+.tl-cell.am-cell.booked-blue,
+.tl-cell.am-cell.booked-amber,
+.tl-cell.am-cell.booked-purple,
+.tl-cell.am-cell.booked-coral { background-color: unset; }
+.tl-cell.pm-cell.booked,
+.tl-cell.pm-cell.booked-blue,
+.tl-cell.pm-cell.booked-amber,
+.tl-cell.pm-cell.booked-purple,
+.tl-cell.pm-cell.booked-coral { background-color: unset; }
 .tl-cell.booked { background: #bbf7d0; }
 .tl-cell.booked-blue { background: #bfdbfe; }
 .tl-cell.booked-amber { background: #fde68a; }
@@ -1554,10 +1575,10 @@ function renderTimeline() {
     const cls = d.date===todayStr ? 'today-h' : d.dow===6 ? 'sat-h' : d.dow===0 ? 'sun-h' : '';
     const dayNum = new Date(d.date+'T00:00:00').getDate();
     dateRow.push('<th class="tl-day-header-date ' + cls + '" colspan="2">' + dayNum + '</th>');
-    const amCls = d.date===todayStr ? ' style="background:#eef5ff"' : '';
-    const pmCls = d.date===todayStr ? ' style="background:#eef5ff"' : '';
-    ampmRow.push('<th class="tl-ampm-header"' + amCls + '>오전</th>');
-    ampmRow.push('<th class="tl-ampm-header"' + pmCls + '>오후</th>');
+    const amCls = d.date===todayStr ? ' style="background:#dbeafe"' : '';
+    const pmCls = d.date===todayStr ? ' style="background:#bfdbfe"' : '';
+    ampmRow.push('<th class="tl-ampm-header am-hdr"' + amCls + '>오전</th>');
+    ampmRow.push('<th class="tl-ampm-header pm-hdr"' + pmCls + '>오후</th>');
   });
 
   const theadHtml = '<thead>' +
@@ -1735,25 +1756,32 @@ function toggleTlGroup(group) {
       }
     });
 
-    // ── 터치 대각선 방지: 주 방향으로만 스크롤 허용 ──
+    // ── 터치 방향 잠금: 처음 움직인 방향(가로/세로)으로만 스크롤 고정 ──
     (function() {
       const sc = document.getElementById('timeline-scroll');
       if (!sc) return;
-      let startX = 0, startY = 0;
+      let startX = 0, startY = 0, lockDir = null;
 
       sc.addEventListener('touchstart', function(e) {
-        startX = e.touches[0].clientX;
-        startY = e.touches[0].clientY;
+        startX  = e.touches[0].clientX;
+        startY  = e.touches[0].clientY;
+        lockDir = null;
       }, { passive: true });
 
       sc.addEventListener('touchmove', function(e) {
         const dx = Math.abs(e.touches[0].clientX - startX);
         const dy = Math.abs(e.touches[0].clientY - startY);
-        // 대각선(두 방향이 비슷하게 움직일 때)만 차단
-        if (dx > 5 && dy > 5 && Math.abs(dx - dy) < 10) {
-          e.preventDefault();
+        if (!lockDir && (dx > 5 || dy > 5)) {
+          lockDir = dx > dy ? 'x' : 'y';
+        }
+        if (lockDir === 'x') {
+          e.preventDefault(); // 가로 스크롤 중 세로 차단
         }
       }, { passive: false });
+
+      sc.addEventListener('touchend', function() {
+        lockDir = null;
+      }, { passive: true });
     })();
   };
 })();

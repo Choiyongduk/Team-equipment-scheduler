@@ -804,7 +804,7 @@ html, body {
         <button class="cal-nav-btn" onclick="moveTlMon(1)">▶</button>
       </div>
     </div>
-    <div id="tl-header-scroll" style="overflow-x:auto;overflow-y:hidden;scrollbar-width:none;-webkit-overflow-scrolling:touch;">
+    <div id="tl-header-scroll" style="overflow-x:auto;overflow-y:hidden;scrollbar-width:none;-webkit-overflow-scrolling:touch;touch-action:pan-x;">
       <table class="tl-table" id="tl-header-table" style="margin:0"></table>
     </div>
   </div>
@@ -994,7 +994,7 @@ html, body {
 
     <!-- ══ 현황표 ══ -->
     <div id="sec-timeline" class="section active">
-      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:40px" id="timeline-scroll">
+      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:40px;touch-action:pan-x;" id="timeline-scroll">
         <div id="timeline-table"></div>
       </div>
     </div>
@@ -1704,8 +1704,19 @@ function renderTimeline() {
   // 가로 스크롤 동기화
   if (sc && hdrScroll && !sc._syncBound) {
     sc._syncBound = true;
-    sc.addEventListener('scroll', () => { hdrScroll.scrollLeft = sc.scrollLeft; });
-    hdrScroll.addEventListener('scroll', () => { sc.scrollLeft = hdrScroll.scrollLeft; });
+    let _syncing = false;
+    sc.addEventListener('scroll', () => {
+      if (_syncing) return;
+      _syncing = true;
+      hdrScroll.scrollLeft = sc.scrollLeft;
+      _syncing = false;
+    }, { passive: true });
+    hdrScroll.addEventListener('scroll', () => {
+      if (_syncing) return;
+      _syncing = true;
+      sc.scrollLeft = hdrScroll.scrollLeft;
+      _syncing = false;
+    }, { passive: true });
   }
 
   const todayIdx = days.findIndex(d => d.date===todayStr);

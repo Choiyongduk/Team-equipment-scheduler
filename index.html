@@ -525,7 +525,7 @@ html, body {
   position: sticky; left: 0; z-index: 100;
   background: #ffffff; border-right: 1px solid var(--border2);
   padding: 5px 8px; white-space: nowrap;
-  width: 200px; min-width: 200px; max-width: 200px;
+  width: 120px; min-width: 120px; max-width: 120px;
   border-bottom: 1px solid var(--border);
   font-size: 11px; color: var(--text);
   overflow: visible;
@@ -586,7 +586,7 @@ html, body {
 /* === FIX: group sticky === */
 .tl-group-sticky {
   position: sticky; left: 0; z-index: 4;
-  width: 200px; min-width: 200px;
+  width: 120px; min-width: 120px;
   background: #eff6ff; padding: 6px 12px;
   font-size: 11px; font-weight: 700; color: #1d4ed8;
   border-right: 1px solid #bfdbfe; border-bottom: 1px solid #bfdbfe;
@@ -1618,7 +1618,7 @@ function renderTimeline() {
   if (!window.tlGroupCollapsed) window.tlGroupCollapsed = {};
 
   // 열 너비
-  const EQUIP_W = 200, HALF_W = 28;
+  const EQUIP_W = 120, HALF_W = 28;
   const colgroup = '<colgroup><col style="width:' + EQUIP_W + 'px">' +
     days.map(() => '<col style="width:' + HALF_W + 'px"><col style="width:' + HALF_W + 'px">').join('') +
     '</colgroup>';

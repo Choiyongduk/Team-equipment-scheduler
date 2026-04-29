@@ -165,6 +165,12 @@ html, body {
 .content::-webkit-scrollbar-track { background: transparent; }
 .content::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
 
+/* 상단 고정 헤더의 가로 스크롤바 - 데스크탑에서 보이게 */
+#tl-header-scroll::-webkit-scrollbar { height: 8px; }
+#tl-header-scroll::-webkit-scrollbar-track { background: var(--bg3); }
+#tl-header-scroll::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
+#tl-header-scroll::-webkit-scrollbar-thumb:hover { background: var(--text3); }
+
 .section { display: none; animation: fadeIn .2s ease; }
 .section.active { display: block; }
 @keyframes fadeIn { from{opacity:0;transform:translateY(4px)} to{opacity:1;transform:translateY(0)} }
@@ -558,7 +564,7 @@ html, body {
   border-right: 1px solid var(--border2);
   background: #f1f5f9;
 }
-.tl-day-header.today-h { color: var(--accent); background: #eff6ff; }
+.tl-day-header.today-h { color: var(--accent); background: #dbeafe; box-shadow: inset 0 2px 0 0 rgba(220,38,38,0.55); }
 .tl-day-header.sat-h { color: var(--blue); }
 .tl-day-header.sun-h { color: var(--red); }
 /* 오전/오후 서브 헤더 */
@@ -572,7 +578,9 @@ html, body {
 }
 .tl-ampm-header.am { border-right: 0.5px solid var(--border); }
 .tl-ampm-header.pm { border-right: 1px solid var(--border2); }
-.tl-ampm-header.today-sub { background: #eff6ff; }
+.tl-ampm-header.today-sub { background: #dbeafe; }
+.tl-ampm-header.today-sub.am { box-shadow: inset 1px 0 0 0 rgba(220,38,38,0.55); }
+.tl-ampm-header.today-sub.pm { box-shadow: inset -1px 0 0 0 rgba(220,38,38,0.55); }
 .tl-cell {
   min-width: 28px; height: 30px;
   border-right: 0.5px solid rgba(30,40,80,0.08);
@@ -586,12 +594,17 @@ html, body {
 .tl-cell.booked-amber { background: #fde68a; }
 .tl-cell.booked-purple { background: #ddd6fe; }
 .tl-cell.booked-coral { background: #fecaca; }
-.tl-cell.today-col { background: #eef5ff; }
+.tl-cell.today-col { background: #dbeafe; }
 .tl-cell.booked.today-col { background: #a7f3d0; }
 .tl-cell.booked-blue.today-col { background: #93c5fd; }
 .tl-cell.booked-amber.today-col { background: #fcd34d; }
 .tl-cell.booked-purple.today-col { background: #c4b5fd; }
 .tl-cell.booked-coral.today-col { background: #fca5a5; }
+/* 오늘 컬럼 빨간 테두리 강조 - AM 셀 좌측, PM 셀 우측, 마지막 행은 하단 */
+.tl-cell.today-col:not(.pm-cell) { box-shadow: inset 1px 0 0 0 rgba(220,38,38,0.55); }
+.tl-cell.today-col.pm-cell { box-shadow: inset -1px 0 0 0 rgba(220,38,38,0.55); }
+tr:last-child .tl-cell.today-col:not(.pm-cell) { box-shadow: inset 1px 0 0 0 rgba(220,38,38,0.55), inset 0 -2px 0 0 rgba(220,38,38,0.55); }
+tr:last-child .tl-cell.today-col.pm-cell { box-shadow: inset -1px 0 0 0 rgba(220,38,38,0.55), inset 0 -2px 0 0 rgba(220,38,38,0.55); }
 .tl-label {
   position: absolute; left: 3px;
   font-size: 9px; font-weight: 700; color: #1a2035;
@@ -889,7 +902,7 @@ html, body {
         <button class="cal-nav-btn" onclick="moveTlMon(1)">▶</button>
       </div>
     </div>
-    <div id="tl-header-scroll" style="overflow-x:auto;overflow-y:hidden;scrollbar-width:none;-webkit-overflow-scrolling:touch;pointer-events:none;">
+    <div id="tl-header-scroll" style="overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;">
       <table class="tl-table" id="tl-header-table" style="margin:0"></table>
     </div>
   </div>
@@ -1847,6 +1860,7 @@ function renderTimeline() {
 
   // 열 너비
   const EQUIP_W = 120, HALF_W = 28;
+  const TABLE_W = EQUIP_W + days.length * HALF_W * 2;
   const colgroup = '<colgroup><col style="width:' + EQUIP_W + 'px">' +
     days.map(() => '<col style="width:' + HALF_W + 'px"><col style="width:' + HALF_W + 'px">').join('') +
     '</colgroup>';
@@ -1863,6 +1877,7 @@ function renderTimeline() {
     hRow2.push('<th class="tl-ampm-header am' + sub + '">오전</th><th class="tl-ampm-header pm' + sub + '">오후</th>');
   });
   if (hdrTable) {
+    hdrTable.style.width = TABLE_W + 'px';
     hdrTable.innerHTML = colgroup + '<thead><tr>' + hRow1.join('') + '</tr><tr>' + hRow2.join('') + '</tr></thead>';
   }
 
@@ -1898,7 +1913,9 @@ function renderTimeline() {
       eq.name + modeTag + '</td>';
 
     const cells = [nameTd];
-    days.forEach(d => {
+    const lastDayIdx = days.length - 1;
+    const HALF_W_PX = HALF_W; // 셀 하나 너비
+    days.forEach((d, dIdx) => {
       const isToday = d.date === todayStr;
       const tc = isToday ? ' today-col' : '';
       ['am','pm'].forEach(half => {
@@ -1912,12 +1929,22 @@ function renderTimeline() {
         if (book) {
           const cls = getUserBookingClass(book.user);
           const isStart = book.start === d.date && (book.startAmPm||'am') === half;
-          const lbl = isStart
-            ? '<span class="tl-label mid">' + (book.user.split('_').pop()||book.user) + (book.spec?' '+book.spec:'') + '</span>'
+          // 이번 달의 첫 셀(1일 오전)이고, 예약이 이전 달부터 이어진 경우 → 라벨 재표시
+          const isFirstCellOfMonth = (dIdx === 0 && half === 'am');
+          const carriedFromPrevMonth = book.start < d0;
+          const isReshowAtMonthStart = isFirstCellOfMonth && carriedFromPrevMonth;
+          const showLabel = isStart || isReshowAtMonthStart;
+          // 현재 셀부터 본문 우측 끝(말일 PM)까지 남은 half-cell 개수 계산
+          // → 라벨이 화면 우측을 넘어가지 못하도록 max-width 제한
+          const remainingHalfCells = (lastDayIdx - dIdx) * 2 + (half === 'am' ? 2 : 1);
+          const maxLabelW = remainingHalfCells * HALF_W_PX - 6; // 좌측 패딩 3px + 여유 3px
+          const labelStyle = ' style="max-width:' + maxLabelW + 'px;overflow:hidden;text-overflow:ellipsis"';
+          const lbl = showLabel
+            ? '<span class="tl-label mid"' + labelStyle + '>' + (book.user.split('_').pop()||book.user) + (book.spec?' '+book.spec:'') + '</span>'
             : '';
           cells.push('<td class="tl-cell ' + cls + tc + halfClass + ' tl-book-cell" data-eid="' + eq.id + '" data-date="' + d.date + '" data-half="' + half + '">' + lbl + '</td>');
         } else if (effSt === 'fixed') {
-          const fixedBg = isToday ? '#eef5ff' : '#fef9ef';
+          const fixedBg = isToday ? '#dbeafe' : '#fef9ef';
           cells.push('<td class="tl-cell' + tc + halfClass + '" style="background:' + fixedBg + '"></td>');
         } else {
           cells.push('<td class="tl-cell tl-book-cell' + tc + halfClass + '" data-eid="' + eq.id + '" data-date="' + d.date + '" data-half="' + half + '" style="cursor:pointer"></td>');
@@ -1927,14 +1954,26 @@ function renderTimeline() {
     bodyRows.push('<tr>' + cells.join('') + '</tr>');
   });
 
-  wrap.innerHTML = '<table class="tl-table">' + colgroup + '<tbody>' + bodyRows.join('') + '</tbody></table>';
+  wrap.innerHTML = '<table class="tl-table" style="width:' + TABLE_W + 'px">' + colgroup + '<tbody>' + bodyRows.join('') + '</tbody></table>';
 
-  // 가로 스크롤 동기화 (바디 → 헤더 단방향)
+  // 가로 스크롤 동기화 (헤더 ↔ 바디 양방향)
   if (sc && hdrScroll && !sc._syncBound) {
     sc._syncBound = true;
+    let syncing = false;
     sc.addEventListener('scroll', () => {
+      if (syncing) return;
+      syncing = true;
       requestAnimationFrame(() => {
         hdrScroll.scrollLeft = sc.scrollLeft;
+        syncing = false;
+      });
+    }, { passive: true });
+    hdrScroll.addEventListener('scroll', () => {
+      if (syncing) return;
+      syncing = true;
+      requestAnimationFrame(() => {
+        sc.scrollLeft = hdrScroll.scrollLeft;
+        syncing = false;
       });
     }, { passive: true });
   }

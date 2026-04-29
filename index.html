@@ -902,7 +902,7 @@ tr:last-child .tl-cell.today-col.pm-cell { box-shadow: inset -1px 0 0 0 rgba(220
         <button class="cal-nav-btn" onclick="moveTlMon(1)">▶</button>
       </div>
     </div>
-    <div id="tl-header-scroll" style="overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;">
+    <div id="tl-header-scroll" style="overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;scroll-behavior:auto;">
       <table class="tl-table" id="tl-header-table" style="margin:0"></table>
     </div>
   </div>
@@ -1200,7 +1200,7 @@ tr:last-child .tl-cell.today-col.pm-cell { box-shadow: inset -1px 0 0 0 rgba(220
 
     <!-- ══ 현황표 ══ -->
     <div id="sec-timeline" class="section active">
-      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:40px" id="timeline-scroll">
+      <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:40px;overscroll-behavior-x:contain;scroll-behavior:auto" id="timeline-scroll">
         <div id="timeline-table"></div>
       </div>
     </div>
@@ -1956,25 +1956,21 @@ function renderTimeline() {
 
   wrap.innerHTML = '<table class="tl-table" style="width:' + TABLE_W + 'px">' + colgroup + '<tbody>' + bodyRows.join('') + '</tbody></table>';
 
-  // 가로 스크롤 동기화 (헤더 ↔ 바디 양방향)
+  // 가로 스크롤 동기화 (헤더 ↔ 바디 양방향, rAF 없이 즉시 동기화로 모바일 관성 보존)
   if (sc && hdrScroll && !sc._syncBound) {
     sc._syncBound = true;
     let syncing = false;
     sc.addEventListener('scroll', () => {
       if (syncing) return;
       syncing = true;
-      requestAnimationFrame(() => {
-        hdrScroll.scrollLeft = sc.scrollLeft;
-        syncing = false;
-      });
+      hdrScroll.scrollLeft = sc.scrollLeft;
+      syncing = false;
     }, { passive: true });
     hdrScroll.addEventListener('scroll', () => {
       if (syncing) return;
       syncing = true;
-      requestAnimationFrame(() => {
-        sc.scrollLeft = hdrScroll.scrollLeft;
-        syncing = false;
-      });
+      sc.scrollLeft = hdrScroll.scrollLeft;
+      syncing = false;
     }, { passive: true });
   }
 
@@ -2076,6 +2072,8 @@ function moveTlMon(dir) {
     calMonth += dir;
     if (calMonth<0) { calMonth=11; calYear--; }
     else if (calMonth>11) { calMonth=0; calYear++; }
+    // 다른 달로 이동 시: 1일부터 보이도록 스크롤 위치를 0으로 리셋
+    timelineScrollRestore = 0;
   }
   renderTimeline();
 }

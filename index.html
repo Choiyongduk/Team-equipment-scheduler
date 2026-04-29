@@ -165,7 +165,14 @@ html, body {
 .content::-webkit-scrollbar-track { background: transparent; }
 .content::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
 
-/* 상단 고정 헤더의 가로 스크롤바 - 데스크탑에서 보이게 */
+/* 상단 고정 헤더의 가로 스크롤바 - 데스크탑에서만 자체 스크롤 가능 */
+#tl-header-scroll { overflow-x: hidden; }
+#tl-header-table { will-change: transform; }
+@media (hover: hover) and (pointer: fine) {
+  /* 마우스를 쓰는 환경(데스크탑)에서만 헤더 스크롤바 노출 */
+  #tl-header-scroll { overflow-x: auto; }
+  #tl-header-table { will-change: auto; }
+}
 #tl-header-scroll::-webkit-scrollbar { height: 8px; }
 #tl-header-scroll::-webkit-scrollbar-track { background: var(--bg3); }
 #tl-header-scroll::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
@@ -902,7 +909,7 @@ tr:last-child .tl-cell.today-col.pm-cell { box-shadow: inset -1px 0 0 0 rgba(220
         <button class="cal-nav-btn" onclick="moveTlMon(1)">▶</button>
       </div>
     </div>
-    <div id="tl-header-scroll" style="overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;scroll-behavior:auto;">
+    <div id="tl-header-scroll" style="overflow-y:hidden;">
       <table class="tl-table" id="tl-header-table" style="margin:0"></table>
     </div>
   </div>
@@ -1956,27 +1963,38 @@ function renderTimeline() {
 
   wrap.innerHTML = '<table class="tl-table" style="width:' + TABLE_W + 'px">' + colgroup + '<tbody>' + bodyRows.join('') + '</tbody></table>';
 
-  // 가로 스크롤 동기화 (헤더 ↔ 바디 양방향, rAF 없이 즉시 동기화로 모바일 관성 보존)
-  if (sc && hdrScroll && !sc._syncBound) {
+  // 가로 스크롤 동기화 - 모바일/데스크탑 분기
+  // 모바일(터치 전용): 헤더 overflow:hidden 상태이므로 transform으로 이동 (GPU 가속, reflow 없음)
+  // 데스크탑(마우스): 헤더 overflow:auto 이므로 scrollLeft 양방향 동기화 (스크롤바 사용 가능)
+  if (sc && hdrScroll && hdrTable && !sc._syncBound) {
     sc._syncBound = true;
-    let syncing = false;
-    sc.addEventListener('scroll', () => {
-      if (syncing) return;
-      syncing = true;
-      hdrScroll.scrollLeft = sc.scrollLeft;
-      syncing = false;
-    }, { passive: true });
-    hdrScroll.addEventListener('scroll', () => {
-      if (syncing) return;
-      syncing = true;
-      sc.scrollLeft = hdrScroll.scrollLeft;
-      syncing = false;
-    }, { passive: true });
+    const isDesktop = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+    if (isDesktop) {
+      let syncing = false;
+      sc.addEventListener('scroll', () => {
+        if (syncing) return;
+        syncing = true;
+        hdrScroll.scrollLeft = sc.scrollLeft;
+        syncing = false;
+      }, { passive: true });
+      hdrScroll.addEventListener('scroll', () => {
+        if (syncing) return;
+        syncing = true;
+        sc.scrollLeft = hdrScroll.scrollLeft;
+        syncing = false;
+      }, { passive: true });
+    } else {
+      // 모바일: 헤더는 transform으로만 이동
+      sc.addEventListener('scroll', () => {
+        hdrTable.style.transform = 'translateX(' + (-sc.scrollLeft) + 'px)';
+      }, { passive: true });
+    }
   }
 
   const todayIdx = days.findIndex(d => d.date===todayStr);
   if (sc) {
     const restoreLeft = timelineScrollRestore;
+    const isDesktopNow = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
     const doScroll = (attempt) => {
       const w = sc.clientWidth;
       if (w === 0 && attempt < 10) { setTimeout(() => doScroll(attempt + 1), 80); return; }
@@ -1985,7 +2003,14 @@ function renderTimeline() {
         : todayIdx > 0 ? Math.max(0, EQUIP_W + todayIdx * (HALF_W * 2) - w / 2) : null;
       if (target !== null) {
         sc.scrollLeft = target;
-        if (hdrScroll) hdrScroll.scrollLeft = target;
+      }
+      // 본문 스크롤 위치에 헤더를 강제 동기화 (모드별로 둘 중 하나만)
+      const finalLeft = sc.scrollLeft;
+      if (isDesktopNow) {
+        if (hdrScroll) hdrScroll.scrollLeft = finalLeft;
+        if (hdrTable) hdrTable.style.transform = '';  // 혹시 남아있을 transform 제거
+      } else {
+        if (hdrTable) hdrTable.style.transform = 'translateX(' + (-finalLeft) + 'px)';
       }
       timelineScrollRestore = null;
     };
@@ -2072,8 +2097,11 @@ function moveTlMon(dir) {
     calMonth += dir;
     if (calMonth<0) { calMonth=11; calYear--; }
     else if (calMonth>11) { calMonth=0; calYear++; }
-    // 다른 달로 이동 시: 1일부터 보이도록 스크롤 위치를 0으로 리셋
-    timelineScrollRestore = 0;
+    // 이동한 달에 오늘이 포함되면 → null(renderTimeline이 오늘 위치로 자동 스크롤)
+    // 포함되지 않으면 → 0 (1일부터 보이도록)
+    const now = new Date();
+    const hasToday = (calYear === now.getFullYear() && calMonth === now.getMonth());
+    timelineScrollRestore = hasToday ? null : 0;
   }
   renderTimeline();
 }
